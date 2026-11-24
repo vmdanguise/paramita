@@ -15,6 +15,8 @@ import ar.param.advisor.ui.ManiViewModel
 import ar.param.advisor.ui.about.FaqScreen
 import ar.param.advisor.ui.home.RefugeHomeScreen
 import ar.param.advisor.ui.practice.PracticeRunnerScreen
+import ar.param.advisor.ui.wellbeing.ImpulsePauseActivity
+import ar.param.advisor.ui.wellbeing.MindfulAppTargetsScreen
 
 object ManiRoutes {
     const val HOME = "home"
@@ -55,6 +57,8 @@ fun ManiNavGraph(
                 state = state,
                 onOpenPractice = { navController.navigate(ManiRoutes.practiceRoute(it)) },
                 onOpenFaq = { navController.navigate(ManiRoutes.FAQ) },
+                onOpenImpulsePause = { context.startActivity(ImpulsePauseActivity.intent(context)) },
+                onOpenMindfulTargets = { navController.navigate(ManiRoutes.MINDFUL_TARGETS) },
                 onStartWithRefugeChange = viewModel::setStartWithRefuge,
                 onOpenLink = { openAllowedLink(context, it) },
             )
@@ -72,6 +76,17 @@ fun ManiNavGraph(
                         navController.navigate(ManiRoutes.HOME)
                     }
                 },
+            )
+        }
+        composable(ManiRoutes.MINDFUL_TARGETS) {
+            val targets by viewModel.mindfulAppTargets.collectAsStateWithLifecycle()
+            val context = LocalContext.current
+            MindfulAppTargetsScreen(
+                targets = targets,
+                onSave = viewModel::saveMindfulAppTarget,
+                onDelete = viewModel::deleteMindfulAppTarget,
+                onTryPause = { context.startActivity(ImpulsePauseActivity.intent(context)) },
+                onBack = { navController.popBackStack() },
             )
         }
         composable(ManiRoutes.FAQ) {

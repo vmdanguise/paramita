@@ -93,14 +93,17 @@
 
 ## F7 — Bienestar digital (spec: `spec-architecture-bienestar-digital-freno-impulso.md`)
 
-- [ ] **T-701** `ImpulseEmotion`, `PauseOutcome`, `ImpulsePauseDecision`, `ImpulseCooldownTracker`.
-- [ ] **T-702** `ImpulsePauseScreen` (5 etapas, spec REQ-001) + registro en `merit_and_calm_events`.
-- [ ] **T-703** `ImpulsePauseActivity` (singleTop, `excludeFromRecents`, extras de paquete).
-- [ ] **T-704** `MindfulAppTriggerEvaluator` + `MindfulAppAccessibilityService` + `res/xml/mindful_accessibility_service.xml`.
-- [ ] **T-705** `MindfulAppTargetsScreen` (alta, edición, cooldown, estado del servicio y botón a Ajustes).
-- [ ] **T-706** Divulgación prominente antes de mandar al usuario a Ajustes de Accesibilidad (política de Google Play).
-- [ ] **T-707** Persistir el cooldown entre reinicios del proceso (hoy vive en memoria; ver spec).
-- [ ] **T-708** No disparar la pausa mientras se maneja (Android Auto conectado), si es detectable.
+- [x] **T-701** `ImpulseEmotion`, `PauseOutcome`, `ImpulsePauseDecision`, `ImpulseCooldownTracker`.
+- [~] **T-702** `ImpulsePauseScreen` (5 etapas, spec REQ-001) + registro en `merit_and_calm_events`.
+  - Falta probarla en un teléfono real (TalkBack y teclado del monto).
+- [x] **T-703** `ImpulsePauseActivity` (singleTop, `excludeFromRecents`, extras de paquete).
+- [~] **T-704** `MindfulAppTriggerEvaluator` + `MindfulAppAccessibilityService` + `res/xml/mindful_accessibility_service.xml`.
+  - Falta probar la activación en Ajustes → Accesibilidad en el teléfono de Vicente.
+- [x] **T-705** `MindfulAppTargetsScreen` (alta, edición, cooldown, estado del servicio y botón a Ajustes).
+- [x] **T-706** Divulgación prominente antes de mandar al usuario a Ajustes de Accesibilidad (política de Google Play).
+- [x] **T-707** Persistir el cooldown entre reinicios del proceso (hoy vive en memoria; ver spec).
+- [~] **T-708** No disparar la pausa mientras se maneja (Android Auto conectado), si es detectable.
+  - Por ahora se usa el modo auto del teléfono (`UiModeManager`). `CarConnection` llega con F8.
 
 ## F8 — Android Auto (spec: `spec-architecture-android-auto.md`)
 

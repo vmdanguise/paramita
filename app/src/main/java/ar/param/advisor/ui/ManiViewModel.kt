@@ -9,7 +9,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import ar.param.advisor.ManiApplication
+import ar.param.advisor.data.local.dao.MindfulAppTargetDao
 import ar.param.advisor.data.local.dao.PracticeDao
+import ar.param.advisor.data.local.entity.MindfulAppTargetEntity
 import ar.param.advisor.data.local.dao.PracticeSessionDao
 import ar.param.advisor.data.local.entity.PracticeTypes
 import ar.param.advisor.data.local.entity.PracticeWithDetails
@@ -44,6 +46,7 @@ data class RefugeHomeUiState(
 class ManiViewModel(
     private val practiceDao: PracticeDao,
     private val sessionDao: PracticeSessionDao,
+    private val targetDao: MindfulAppTargetDao,
     private val settings: ManiSettings,
     private val today: () -> LocalDate = { LocalDate.now() },
 ) : ViewModel() {
@@ -99,11 +102,22 @@ class ManiViewModel(
 
     fun setStartWithRefuge(enabled: Boolean) = settings.setStartWithRefuge(enabled)
 
+    val mindfulAppTargets: StateFlow<List<MindfulAppTargetEntity>> = targetDao.observeTargets()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun saveMindfulAppTarget(target: MindfulAppTargetEntity) {
+        viewModelScope.launch { targetDao.upsertTarget(target.copy(cooldownMinutes = target.cooldownMinutes.coerceIn(1, 1440))) }
+    }
+
+    fun deleteMindfulAppTarget(packageName: String) {
+        viewModelScope.launch { targetDao.deleteTarget(packageName) }
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as ManiApplication
-                ManiViewModel(app.practiceDao, app.practiceSessionDao, app.settings)
+                ManiViewModel(app.practiceDao, app.practiceSessionDao, app.mindfulAppTargetDao, app.settings)
             }
         }
     }

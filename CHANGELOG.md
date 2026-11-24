@@ -5,6 +5,18 @@ Los cambios de contenido del catálogo indican el `schema_version`.
 
 ## [Sin publicar]
 
+## [0.3.0] - 2026-11-24 — freno al impulso
+
+### Agregado (F7 — freno al impulso)
+- Pausa lúcida (`ImpulsePauseActivity`): respiración de 6 s, "¿Qué está buscando tu mente?", monto opcional si es una compra por impulso, reflexión breve con práctica sugerida y dedicación del mérito. "Continuar con consciencia" está visible en todos los pasos y no pide confirmación.
+- Pantalla "Pausa al abrir apps": elegís qué apps instaladas (Mercado Libre, Facebook, etc., que aparecen primero si están instaladas) te ofrecen la pausa y cada cuánto. Aviso claro antes de ir a Ajustes → Accesibilidad.
+- `MindfulAppAccessibilityService` opt-in: solo mira el nombre del paquete en primer plano, sin leer contenido. Cooldown por app que sobrevive a reinicios; no se dispara en modo auto.
+- Cada pausa se registra en el dispositivo (`merit_and_calm_events`, con `outcome`).
+- Spec de bienestar digital v1.1.
+
+### Cambiado
+- El modo susurro ahora suena como un susurro de verdad: la frase del TTS se procesa en el teléfono para quitarle la vibración de la voz (envolvente espectral con fase aleatoria, sin graves). Si falla, vuelve a la voz suave anterior.
+
 ## [0.2.0] - 2026-11-24 · primera versión usable
 
 ### Agregado (F2 · datos)

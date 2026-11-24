@@ -53,6 +53,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handleOpenActive(intent: Intent?): Boolean {
+        intent?.getStringExtra(EXTRA_OPEN_PRACTICE_ID)?.let {
+            navRequest = NavRequest(it)
+            return true
+        }
         if (intent?.getBooleanExtra(EXTRA_OPEN_ACTIVE_PRACTICE, false) != true) return false
         val id = PracticePlaybackService.sessionState.value.practiceId ?: return false
         navRequest = NavRequest(id)
@@ -89,5 +93,6 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_OPEN_ACTIVE_PRACTICE = "ar.param.advisor.extra.OPEN_ACTIVE_PRACTICE"
+        const val EXTRA_OPEN_PRACTICE_ID = "ar.param.advisor.extra.OPEN_PRACTICE_ID"
     }
 }

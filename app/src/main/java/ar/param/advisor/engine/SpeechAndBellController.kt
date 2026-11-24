@@ -14,9 +14,12 @@ import android.speech.tts.UtteranceProgressListener
 import android.util.Log
 import kotlinx.coroutines.CancellableContinuation
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
+import java.io.File
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -36,9 +39,13 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
     private val ready = CompletableDeferred<Boolean>()
     private val pending = ConcurrentHashMap<String, CancellableContinuation<Unit>>()
     private val bell = BellSynth()
+    private val whisperCache = object : LinkedHashMap<String, PcmClip>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, PcmClip>?) = size > WHISPER_CACHE_SIZE
+    }
 
     @Volatile private var speechRate = 1f
     @Volatile private var paceWpm = 120
+    @Volatile private var whisperTrack: AudioTrack? = null
 
     // Se asigna después de construirse; onInit no lo toca directamente (CON-003).
     @Volatile private var tts: TextToSpeech? = null
@@ -100,6 +107,13 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
             delay(estimatedReadingMs(text))
             return
         }
+        if (mode == RecitationMode.WHISPER) {
+            val clip = whisperClip(engine, text)
+            if (clip != null) {
+                playClip(clip)
+                return
+            }
+        }
         val whisper = mode == RecitationMode.WHISPER
         engine.setSpeechRate(speechRate)
         engine.setPitch(if (whisper) 0.86f else 1f)
@@ -119,6 +133,85 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
         }
     }
 
+    /**
+     * Susurro real: el TTS genera la frase en un archivo, se le quita la voz sonora
+     * ([Whisperizer]) y se guarda en memoria, porque los mantras se repiten muchas veces.
+     * Si algo falla devuelve null y se usa la voz normal a volumen bajo.
+     */
+    private suspend fun whisperClip(engine: TextToSpeech, text: String): PcmClip? {
+        val rate = speechRate * WHISPER_RATE_FACTOR
+        val key = "$rate|$text"
+        synchronized(whisperCache) { whisperCache[key] }?.let { return it }
+        val file = File(appContext.cacheDir, "susurro_${UUID.randomUUID()}.wav")
+        return try {
+            engine.setSpeechRate(rate)
+            engine.setPitch(1f)
+            val id = UUID.randomUUID().toString()
+            val ok = withTimeoutOrNull(WHISPER_SYNTH_TIMEOUT_MS) {
+                suspendCancellableCoroutine { cont ->
+                    pending[id] = cont
+                    cont.invokeOnCancellation { pending.remove(id) }
+                    if (engine.synthesizeToFile(text, Bundle(), file, id) == TextToSpeech.ERROR) {
+                        pending.remove(id)?.resume(Unit)
+                    }
+                }
+                true
+            } ?: false
+            if (!ok || !file.exists()) return null
+            val clip = withContext(Dispatchers.Default) {
+                WavPcm.parse(file.readBytes())
+                    ?.takeIf { it.samples.isNotEmpty() }
+                    ?.let { PcmClip(Whisperizer.process(it.samples, it.sampleRate), it.sampleRate) }
+            } ?: return null
+            synchronized(whisperCache) { whisperCache[key] = clip }
+            clip
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.w(TAG, "No se pudo preparar el susurro; se usa la voz suave", e)
+            null
+        } finally {
+            file.delete()
+        }
+    }
+
+    private suspend fun playClip(clip: PcmClip) {
+        val track = try {
+            AudioTrack.Builder()
+                .setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                        .build(),
+                )
+                .setAudioFormat(
+                    AudioFormat.Builder()
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .setSampleRate(clip.sampleRate)
+                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                        .build(),
+                )
+                .setBufferSizeInBytes(clip.samples.size * 2)
+                .setTransferMode(AudioTrack.MODE_STATIC)
+                .build()
+        } catch (e: Exception) {
+            Log.w(TAG, "No se pudo reproducir el susurro", e)
+            delay(clip.samples.size * 1000L / clip.sampleRate)
+            return
+        }
+        try {
+            track.write(clip.samples, 0, clip.samples.size)
+            whisperTrack = track
+            track.play()
+            delay(clip.samples.size * 1000L / clip.sampleRate + 60L)
+        } finally {
+            whisperTrack = null
+            runCatching {
+                track.stop()
+                track.release()
+            }
+        }
+    }
+
     private fun estimatedReadingMs(text: String): Long {
         val words = text.trim().split(Regex("\\s+")).size
         return (words * 60_000L / paceWpm).coerceAtLeast(1_500L)
@@ -130,6 +223,7 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
 
     override fun stopSpeaking() {
         runCatching { tts?.stop() }
+        runCatching { whisperTrack?.pause() }
     }
 
     override fun release() {
@@ -146,6 +240,9 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
     private companion object {
         const val TAG = "SpeechAndBell"
         const val TTS_INIT_TIMEOUT_MS = 5_000L
+        const val WHISPER_SYNTH_TIMEOUT_MS = 15_000L
+        const val WHISPER_RATE_FACTOR = 0.9f
+        const val WHISPER_CACHE_SIZE = 24
     }
 }
 

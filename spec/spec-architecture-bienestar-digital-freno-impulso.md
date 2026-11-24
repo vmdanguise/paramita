@@ -1,7 +1,8 @@
 ---
 title: Bienestar digital y freno al impulso (pausa lúcida + AccessibilityService opt-in)
-version: 1.0
+version: 1.1
 date_created: 2026-11-24
+last_updated: 2026-11-24
 owner: Vicente
 tags: [architecture, bienestar-digital, accesibilidad, privacidad]
 ---
@@ -34,6 +35,7 @@ Paquetes `digitalwellbeing` y `ui.wellbeing`. Referencia en el chat:
   3. **Monto opcional:** solo si la emoción es `IMPULSE_BUY` ("Monto estimado (opcional, ARS)" + "Solo como referencia personal; sin metas rígidas ni culpa.").
   4. **Micro-maitri:** texto breve + botón "Escuchar práctica guiada" (inicia `prac_med_amor_bondadoso` o un mantra de 7 vueltas según la emoción, ver §4.2).
   5. **Cierre:** botones "Descansar en calma" (registra el evento y cierra), "Continuar con consciencia" (registra y vuelve a la app) y "Cerrar".
+  - *v1.1:* las etapas 4 y 5 se muestran juntas en una sola pantalla. "Continuar con consciencia" está visible **en todas las etapas** (no solo al final), para que nunca haya que atravesar la pausa para salir (REQ-004). "Descansar en calma" lleva al inicio del teléfono.
 - **REQ-002:** Registro en `merit_and_calm_events` con `event_type = IMPULSE_PURCHASE_AVOIDED` si la emoción es `IMPULSE_BUY` y el outcome **no** es `PROCEEDED_CONSCIOUSLY`. Si no, `DIGITAL_CALM_BREAK`. Si el outcome es `PROCEEDED_CONSCIOUSLY`, también se registra `DIGITAL_CALM_BREAK` (haber hecho la pausa ya es valioso), pero sin monto.
 - **REQ-003:** Al registrar se muestra la dedicación ("Que la serenidad y el cuidado de hoy beneficien a todos los seres.").
 - **REQ-004:** "Continuar con consciencia" nunca pide confirmación extra ni muestra texto de culpa (SEC-001 de ética).
@@ -51,6 +53,7 @@ Paquetes `digitalwellbeing` y `ui.wellbeing`. Referencia en el chat:
 - **REQ-023 (mejora sobre el chat):** El cooldown se **persiste** (SharedPreferences `impulse_cooldown_prefs`, clave = paquete, valor = epoch ms) para que sobreviva al reinicio del servicio. El borrador lo guardaba solo en memoria.
 - **REQ-024:** Debounce: se cancela la evaluación previa si llega otro evento (como en el borrador).
 - **REQ-025:** Si Android Auto está conectado (`CarConnection.type == CONNECTION_TYPE_PROJECTION`), no se lanzan pausas (SEC-010 de ética).
+  - *v1.1:* mientras `androidx.car.app` no sea dependencia (F8), se usa `UiModeManager.currentModeType == UI_MODE_TYPE_CAR`, que cubre el modo auto del teléfono. Pasar a `CarConnection` queda en T-708.
 
 ### Configuración (MindfulAppTargetsScreen, ruta `mindful_targets`)
 - **REQ-030:** Tarjeta de estado del servicio (activo / pendiente) que se reevalúa en `ON_RESUME`, con el botón "Activar en Ajustes".

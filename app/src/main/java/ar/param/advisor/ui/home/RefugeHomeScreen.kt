@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,6 +47,8 @@ fun RefugeHomeScreen(
     state: RefugeHomeUiState,
     onOpenPractice: (String) -> Unit,
     onOpenFaq: () -> Unit,
+    onOpenImpulsePause: () -> Unit,
+    onOpenMindfulTargets: () -> Unit,
     onStartWithRefugeChange: (Boolean) -> Unit,
     onOpenLink: (String) -> Unit,
 ) {
@@ -76,9 +79,7 @@ fun RefugeHomeScreen(
                 }
                 return@LazyColumn
             }
-            state.impulsePractice?.let { impulse ->
-                item { ImpulseCard { onOpenPractice(impulse.practice.id) } }
-            }
+            item { ImpulseCard(onPause = onOpenImpulsePause, onConfigure = onOpenMindfulTargets) }
             state.featuredPractice?.let { featured ->
                 item { SectionTitle(R.string.home_featured) }
                 item { PracticeCard(featured, highlighted = true) { onOpenPractice(featured.practice.id) } }
@@ -133,12 +134,12 @@ private fun ActiveSessionBanner(snapshot: RunnerSnapshot, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ImpulseCard(onClick: () -> Unit) {
+private fun ImpulseCard(onPause: () -> Unit, onConfigure: () -> Unit) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
     ) {
-        Column(Modifier.padding(16.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 stringResource(R.string.impulse_card_title),
                 style = MaterialTheme.typography.titleMedium,
@@ -149,6 +150,14 @@ private fun ImpulseCard(onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onTertiaryContainer,
             )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                androidx.compose.material3.Button(onClick = onPause, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.impulse_card_pause))
+                }
+                TextButton(onClick = onConfigure, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.impulse_card_configure))
+                }
+            }
         }
     }
 }
