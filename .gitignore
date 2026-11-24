@@ -34,3 +34,6 @@ desktop.ini
 *.log
 
 # NO ignorar: app/schemas/ (esquema exportado de Room, se versiona)
+
+# APKs generadas a mano para probar
+dist/
