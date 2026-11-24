@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Manifest base de F1 (T-103). Los componentes que todavía no existen
-  (ManiApplication, PracticePlaybackService, ImpulsePauseActivity,
+  Manifest de F2-F5. Los componentes que todavía no existen (ImpulsePauseActivity,
   MindfulAppAccessibilityService, DrivingCarAppService) se agregan en su fase,
   según spec-infrastructure-build-manifest.md §4.1.
-  allowBackup: pendiente de Q-08 (docs/preguntas-abiertas.md).
+  allowBackup="true": el historial se incluye en el backup de Google (Q-08, respondida por Vicente).
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -27,6 +26,7 @@
     </queries>
 
     <application
+        android:name=".ManiApplication"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
@@ -43,5 +43,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.PracticePlaybackService"
+            android:exported="false"
+            android:foregroundServiceType="mediaPlayback" />
     </application>
 </manifest>
