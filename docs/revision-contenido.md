@@ -2,7 +2,7 @@
 
 Todo texto litúrgico o doctrinal del catálogo (`assets/catalog_v1.json`) y los textos de reflexión de la app necesitan aprobación humana antes de publicarse (spec de ética, ETH-020 y ETH-021).
 
-## Estado actual del catálogo (schema_version 2)
+## Estado actual del catálogo (schema_version 3)
 
 | Práctica | Fuente | Estado | Revisó | Fecha | Notas |
 |----------|--------|--------|--------|-------|-------|
@@ -26,3 +26,5 @@ Todo texto litúrgico o doctrinal del catálogo (`assets/catalog_v1.json`) y los
 ## Historial de aprobaciones
 
 <!-- AAAA-MM-DD · práctica/texto · quién · decisión · schema_version resultante -->
+
+- 2026-11-24 · textos guía de `prac_med_amor_bondadoso`, `prac_pausa_impulso_compra`, `prac_calma_digital_noche` · Vicente (Q-03) · tuteo → voseo, solo la forma verbal (Sentate, Soltá, Acompañá, Cultivá, Dejá, Dedicá, Detenete, Notá, adquirís, volvé, Bajá, tomá, necesitás) · schema_version 3. **No** aprueba el contenido: cada práctica sigue ⏳ PENDIENTE (Q-01).

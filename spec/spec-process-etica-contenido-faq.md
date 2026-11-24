@@ -1,6 +1,7 @@
 ---
 title: Límites éticos, revisión de contenido y FAQ
-version: 1.0
+version: 1.1
+last_updated: 2026-11-24
 date_created: 2026-11-24
 owner: Vicente
 tags: [process, etica, contenido, faq]
@@ -49,7 +50,7 @@ Se aplica a todo texto visible (UI, notificaciones, catálogo, descripciones de 
 - **SEC-010:** Con Android Auto no se ofrecen meditaciones guiadas ni pausas de impulso, y no se muestran textos largos.
 
 ### Tono
-- **GUD-001:** Español rioplatense neutro y cálido. En la UI se usa voseo ("respirá", "elegí"). En los textos del catálogo heredados se respeta la forma original (tuteo) hasta la revisión editorial (ver pregunta abierta Q-03).
+- **GUD-001:** Español rioplatense neutro y cálido. En la UI se usa voseo ("respirá", "elegí"). Los textos guía del catálogo también usan voseo (Q-03, respondida por Vicente el 2026-11-24); en los textos litúrgicos solo se adapta la forma verbal, nunca el contenido.
 - **GUD-002:** Frases breves y verbos suaves ("Si querés...", "Podés..."). Nada de imperativos de urgencia.
 
 ## 4. Interfaces y contratos
