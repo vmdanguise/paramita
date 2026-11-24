@@ -1,6 +1,6 @@
 # ADR-0003: Política de migraciones de Room y protección del historial
 
-- **Estado:** Propuesto. Se decide en T-209, antes de la primera release.
+- **Estado:** Aceptado (T-209, 2026-11-24): opción 2 + A + D, implementadas en `ManiDatabase` v1.
 - **Fecha:** 2026-11-24
 - **Specs afectadas:** `spec-schema-base-datos-room.md`, `spec-data-catalogo-json.md`, `spec-infrastructure-build-manifest.md`
 
@@ -28,7 +28,7 @@ El borrador del chat usa `fallbackToDestructiveMigration(dropAllTables = true)`,
 - Prácticas retiradas: **A** (ya reflejada en la spec del esquema, v1 incluye `is_archived`).
 - Outcome: **D**, si se hace antes de la primera release (se agrega directamente en v1, sin migración). Si no, C como paso intermedio.
 
-Vicente o quien implemente T-209 confirma y cambia el estado a "Aceptado".
+Implementado en F2: `practices.is_archived`, `merit_and_calm_events.outcome`, `practice_sessions` sin `ON DELETE CASCADE`, `fallbackToDestructiveMigration` solo si la app es debuggable, y el esquema exportado en `app/schemas/`. Test: `CatalogSeederDbTest.ac002_removedPracticeIsArchivedAndHistoryKept`.
 
 ## Consecuencias
 

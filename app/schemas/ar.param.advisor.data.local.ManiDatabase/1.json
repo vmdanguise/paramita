@@ -1,0 +1,582 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "bea3b5d0f8091ec092b8fe73c3ddae93",
+    "entities": [
+      {
+        "tableName": "practices",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `title` TEXT NOT NULL, `subtitle` TEXT, `tradition` TEXT NOT NULL, `estimated_minutes` INTEGER NOT NULL DEFAULT 5, `audio_asset_uri` TEXT, `tts_enabled` INTEGER NOT NULL DEFAULT 1, `default_pace_wpm` INTEGER NOT NULL DEFAULT 120, `merit_dedication` TEXT NOT NULL, `paramita_section` TEXT, `paramita_topic` TEXT, `paramita_url_path` TEXT, `is_favorite` INTEGER NOT NULL DEFAULT 0, `is_archived` INTEGER NOT NULL DEFAULT 0, `updated_at_epoch_ms` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "subtitle",
+            "columnName": "subtitle",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tradition",
+            "columnName": "tradition",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "estimatedMinutes",
+            "columnName": "estimated_minutes",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "5"
+          },
+          {
+            "fieldPath": "audioAssetUri",
+            "columnName": "audio_asset_uri",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ttsEnabled",
+            "columnName": "tts_enabled",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "defaultPaceWpm",
+            "columnName": "default_pace_wpm",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "120"
+          },
+          {
+            "fieldPath": "meritDedication",
+            "columnName": "merit_dedication",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "paramitaSection",
+            "columnName": "paramita_section",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "paramitaTopic",
+            "columnName": "paramita_topic",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "paramitaUrlPath",
+            "columnName": "paramita_url_path",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isFavorite",
+            "columnName": "is_favorite",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "isArchived",
+            "columnName": "is_archived",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "updatedAtEpochMs",
+            "columnName": "updated_at_epoch_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "practice_segments",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `practice_id` TEXT NOT NULL, `segment_order` INTEGER NOT NULL, `phase` TEXT NOT NULL, `heading` TEXT NOT NULL, `text` TEXT NOT NULL, `transliteration` TEXT, `meaning` TEXT, `pause_after_sec` INTEGER NOT NULL DEFAULT 3, `repeat_count` INTEGER NOT NULL DEFAULT 1, PRIMARY KEY(`id`), FOREIGN KEY(`practice_id`) REFERENCES `practices`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceId",
+            "columnName": "practice_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "segmentOrder",
+            "columnName": "segment_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "phase",
+            "columnName": "phase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "heading",
+            "columnName": "heading",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transliteration",
+            "columnName": "transliteration",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "meaning",
+            "columnName": "meaning",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pauseAfterSec",
+            "columnName": "pause_after_sec",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "3"
+          },
+          {
+            "fieldPath": "repeatCount",
+            "columnName": "repeat_count",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_segments_practice_order",
+            "unique": false,
+            "columnNames": [
+              "practice_id",
+              "segment_order"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_segments_practice_order` ON `${TABLE_NAME}` (`practice_id`, `segment_order`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "practices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "mantra_configs",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`practice_id` TEXT NOT NULL, `target_repetitions` INTEGER NOT NULL DEFAULT 21, `preset_counts_json` TEXT NOT NULL, `recitation_modes_json` TEXT NOT NULL, `bell_every_n` INTEGER NOT NULL DEFAULT 7, `pause_between_reps_ms` INTEGER NOT NULL DEFAULT 900, PRIMARY KEY(`practice_id`), FOREIGN KEY(`practice_id`) REFERENCES `practices`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "practiceId",
+            "columnName": "practice_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "targetRepetitions",
+            "columnName": "target_repetitions",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "21"
+          },
+          {
+            "fieldPath": "presetCountsJson",
+            "columnName": "preset_counts_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "recitationModesJson",
+            "columnName": "recitation_modes_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "bellEveryN",
+            "columnName": "bell_every_n",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "7"
+          },
+          {
+            "fieldPath": "pauseBetweenRepsMs",
+            "columnName": "pause_between_reps_ms",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "900"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "practice_id"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "practices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "practice_tags",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`practice_id` TEXT NOT NULL, `tag` TEXT NOT NULL, PRIMARY KEY(`practice_id`, `tag`), FOREIGN KEY(`practice_id`) REFERENCES `practices`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "practiceId",
+            "columnName": "practice_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tag",
+            "columnName": "tag",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "practice_id",
+            "tag"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "practices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "practice_jewel_focus",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`practice_id` TEXT NOT NULL, `jewel` TEXT NOT NULL, PRIMARY KEY(`practice_id`, `jewel`), FOREIGN KEY(`practice_id`) REFERENCES `practices`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "practiceId",
+            "columnName": "practice_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "jewel",
+            "columnName": "jewel",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "practice_id",
+            "jewel"
+          ]
+        },
+        "foreignKeys": [
+          {
+            "table": "practices",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "practice_sessions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `practice_id` TEXT NOT NULL, `started_at_epoch_ms` INTEGER NOT NULL, `ended_at_epoch_ms` INTEGER, `completed_repetitions` INTEGER NOT NULL DEFAULT 0, `recitation_mode` TEXT, `completed_full` INTEGER NOT NULL DEFAULT 0, `merit_dedicated` INTEGER NOT NULL DEFAULT 0, `note` TEXT, PRIMARY KEY(`id`), FOREIGN KEY(`practice_id`) REFERENCES `practices`(`id`) ON UPDATE NO ACTION ON DELETE NO ACTION )",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "practiceId",
+            "columnName": "practice_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "startedAtEpochMs",
+            "columnName": "started_at_epoch_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "endedAtEpochMs",
+            "columnName": "ended_at_epoch_ms",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "completedRepetitions",
+            "columnName": "completed_repetitions",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "recitationMode",
+            "columnName": "recitation_mode",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "completedFull",
+            "columnName": "completed_full",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "meritDedicated",
+            "columnName": "merit_dedicated",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_sessions_started_at",
+            "unique": false,
+            "columnNames": [
+              "started_at_epoch_ms"
+            ],
+            "orders": [
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_sessions_started_at` ON `${TABLE_NAME}` (`started_at_epoch_ms` DESC)"
+          },
+          {
+            "name": "idx_sessions_practice",
+            "unique": false,
+            "columnNames": [
+              "practice_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_sessions_practice` ON `${TABLE_NAME}` (`practice_id`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "practices",
+            "onDelete": "NO ACTION",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "practice_id"
+            ],
+            "referencedColumns": [
+              "id"
+            ]
+          }
+        ]
+      },
+      {
+        "tableName": "merit_and_calm_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `event_type` TEXT NOT NULL, `title` TEXT NOT NULL, `trigger_context` TEXT, `avoided_amount_estimate` REAL, `currency_code` TEXT, `emotion_noticed` TEXT, `dedication_note` TEXT, `outcome` TEXT, `created_at_epoch_ms` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventType",
+            "columnName": "event_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "triggerContext",
+            "columnName": "trigger_context",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "avoidedAmountEstimate",
+            "columnName": "avoided_amount_estimate",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "currencyCode",
+            "columnName": "currency_code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "emotionNoticed",
+            "columnName": "emotion_noticed",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "dedicationNote",
+            "columnName": "dedication_note",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "outcome",
+            "columnName": "outcome",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAtEpochMs",
+            "columnName": "created_at_epoch_ms",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "idx_merit_events_created_at",
+            "unique": false,
+            "columnNames": [
+              "created_at_epoch_ms"
+            ],
+            "orders": [
+              "DESC"
+            ],
+            "createSql": "CREATE INDEX IF NOT EXISTS `idx_merit_events_created_at` ON `${TABLE_NAME}` (`created_at_epoch_ms` DESC)"
+          }
+        ]
+      },
+      {
+        "tableName": "mindful_app_targets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`package_name` TEXT NOT NULL, `display_name` TEXT NOT NULL, `category` TEXT NOT NULL, `prompt_enabled` INTEGER NOT NULL DEFAULT 1, `cooldown_minutes` INTEGER NOT NULL DEFAULT 15, PRIMARY KEY(`package_name`))",
+        "fields": [
+          {
+            "fieldPath": "packageName",
+            "columnName": "package_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "displayName",
+            "columnName": "display_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "promptEnabled",
+            "columnName": "prompt_enabled",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "1"
+          },
+          {
+            "fieldPath": "cooldownMinutes",
+            "columnName": "cooldown_minutes",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "15"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "package_name"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bea3b5d0f8091ec092b8fe73c3ddae93')"
+    ]
+  }
+}

@@ -1,7 +1,8 @@
 ---
 title: Esquema de base de datos local (SQLite / Room)
-version: 1.0
+version: 1.1
 date_created: 2026-11-24
+last_updated: 2026-11-24
 owner: Vicente
 tags: [schema, room, sqlite, datos]
 ---
@@ -118,6 +119,7 @@ CREATE TABLE merit_and_calm_events (
   currency_code TEXT,                       -- ej. "ARS"
   emotion_noticed TEXT,                     -- ImpulseEmotion.name o texto libre
   dedication_note TEXT,
+  outcome TEXT,                             -- PauseOutcome.name (NUEVO, ADR-0003 opción D)
   created_at_epoch_ms INTEGER NOT NULL
 );
 CREATE INDEX idx_merit_events_created_at ON merit_and_calm_events(created_at_epoch_ms DESC);

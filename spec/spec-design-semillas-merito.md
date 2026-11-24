@@ -60,7 +60,7 @@ object SeedCalculator {
 }
 ```
 
-Para registrar `PRACTICED_MAITRI` en eventos de pausa, el `emotion_noticed` se mantiene y se agrega el outcome en `trigger_context` con el formato `"{contexto}|outcome={PauseOutcome}"`. *(Alternativa: una columna `outcome` en la v2 de la DB; decidir en T-209.)*
+Para registrar `PRACTICED_MAITRI` en eventos de pausa, el `emotion_noticed` se mantiene y el resultado se guarda en la columna `merit_and_calm_events.outcome` (`PauseOutcome.name`). *(Decidido en T-209 / ADR-0003: la columna está en la v1 de la DB; ya no se codifica en `trigger_context`.)*
 
 ### 4.3 Dedicaciones por defecto
 
