@@ -76,7 +76,7 @@ fun categoryLabel(category: String): Int = when (category) {
     else -> R.string.category_other
 }
 
-private val COOLDOWNS = listOf(5, 15, 30, 60)
+private val COOLDOWNS = listOf(1, 5, 15, 30, 60)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

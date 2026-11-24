@@ -58,7 +58,7 @@ Paquetes `digitalwellbeing` y `ui.wellbeing`. Referencia en el chat:
 ### Configuración (MindfulAppTargetsScreen, ruta `mindful_targets`)
 - **REQ-030:** Tarjeta de estado del servicio (activo / pendiente) que se reevalúa en `ON_RESUME`, con el botón "Activar en Ajustes".
 - **REQ-031:** Antes de abrir los Ajustes de Accesibilidad se muestra un **diálogo de divulgación** con el texto de §4.3 y dos botones: "Entiendo, ir a Ajustes" / "Ahora no".
-- **REQ-032:** Formulario: elegir de la lista de apps instaladas que se pueden lanzar (`queryIntentActivities(ACTION_MAIN + CATEGORY_LAUNCHER)`) o escribir el paquete; categoría `SHOPPING`/`SOCIAL_SCROLL`/`OTHER`; `promptEnabled`; cooldown de 5, 15, 30 o 60 minutos o personalizado (1-1440).
+- **REQ-032:** Formulario: elegir de la lista de apps instaladas que se pueden lanzar (`queryIntentActivities(ACTION_MAIN + CATEGORY_LAUNCHER)`) o escribir el paquete; categoría `SHOPPING`/`SOCIAL_SCROLL`/`OTHER`; `promptEnabled`; cooldown de 1, 5, 15, 30 o 60 minutos o personalizado (1-1440). *(v1.1: se agrega 1 minuto a pedido de Vicente.)*
 - **REQ-033:** Lista de targets con switch, editar y eliminar.
 - **REQ-034:** Manifest: `<queries>` con un intent `MAIN/LAUNCHER` para poder listar apps en Android 11+ **sin** `QUERY_ALL_PACKAGES`.
 

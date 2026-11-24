@@ -95,9 +95,10 @@ class WhisperVoiceTest {
     }
 
     @Test
-    fun frameSizeIsPowerOfTwoAroundTwelveMs() {
-        assertEquals(256, Whisperizer.frameSizeFor(22_050))
-        assertEquals(128, Whisperizer.frameSizeFor(16_000))
-        assertEquals(512, Whisperizer.frameSizeFor(48_000))
+    fun frameIsTwentyFiveMsAndEven() {
+        assertEquals(550, Whisperizer.frameSizeFor(22_050))
+        assertEquals(400, Whisperizer.frameSizeFor(16_000))
+        assertEquals(1_200, Whisperizer.frameSizeFor(48_000))
+        assertEquals(26, Whisperizer.lpcOrderFor(22_050))
     }
 }

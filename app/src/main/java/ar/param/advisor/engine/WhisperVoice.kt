@@ -5,12 +5,13 @@ import java.nio.ByteOrder
 import java.util.Random
 import kotlin.math.PI
 import kotlin.math.abs
-import kotlin.math.ceil
 import kotlin.math.cos
-import kotlin.math.hypot
+import kotlin.math.exp
+import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.roundToInt
-import kotlin.math.sin
+import kotlin.math.sqrt
 
 internal class PcmClip(val samples: ShortArray, val sampleRate: Int)
 
@@ -63,123 +64,123 @@ internal object WavPcm {
 }
 
 /**
- * Convierte voz hablada en susurro: conserva la envolvente espectral de cada fragmento
- * corto (lo que hace entendibles las palabras) y reemplaza la fase por ruido, así
- * desaparece la vibración de las cuerdas vocales. También quita graves y realza un poco
- * los agudos, como en un susurro real.
+ * Convierte voz hablada en susurro con LPC: en cada fragmento de 25 ms se estima la forma
+ * del tracto vocal (lo que hace entendibles las palabras) y se la excita con soplido (ruido)
+ * en lugar de la vibración de las cuerdas vocales. Así suena como un susurro real, sin
+ * el sonido granulado de mezclar fases al azar.
  */
 internal object Whisperizer {
-    private const val LOW_CUT_HZ = 280.0
-    private const val TILT_TOP_HZ = 3_500.0
+    private const val FRAME_SECONDS = 0.025
+    private const val PRE_EMPHASIS = 0.94
+    private const val DE_EMPHASIS = 0.9
+    private const val BANDWIDTH_EXPANSION = 0.985
+    private const val GATE_DB = -55.0
+    private const val HIGH_PASS_HZ = 250.0
 
-    fun process(input: ShortArray, sampleRate: Int, seed: Long = 7L, peak: Double = 0.55): ShortArray {
+    fun process(input: ShortArray, sampleRate: Int, seed: Long = 7L, peak: Double = 0.5): ShortArray {
         if (input.isEmpty() || sampleRate <= 0) return input.copyOf()
         val n = frameSizeFor(sampleRate)
-        val hop = n / 8
-        val half = n / 2
-        val window = DoubleArray(n) { 0.5 - 0.5 * cos(2 * PI * it / n) }
-        val total = input.size + 2 * n
-        val acc = DoubleArray(total)
-        val norm = DoubleArray(total)
-        val re = DoubleArray(n)
-        val im = DoubleArray(n)
+        val hop = n / 2
+        val order = lpcOrderFor(sampleRate)
+        // Ventana de Hann periódica: con salto del 50 % suma exactamente 1.
+        val window = DoubleArray(n) { 0.5 - 0.5 * cos(2 * PI * (it + 0.5) / n) }
+        val windowEnergy = window.sumOf { it * it }
+
+        val padded = DoubleArray(input.size + 2 * n)
+        var previous = input[0].toDouble()
+        for (i in input.indices) {
+            val v = input[i].toDouble()
+            padded[i + n] = if (i == 0) v else v - PRE_EMPHASIS * previous
+            previous = v
+        }
+
+        val starts = (0..padded.size - n step hop).toList()
+        val energies = DoubleArray(starts.size) { f ->
+            var e = 0.0
+            for (i in 0 until n) {
+                val v = padded[starts[f] + i] * window[i]
+                e += v * v
+            }
+            e
+        }
+        val gate = (energies.maxOrNull() ?: 0.0) * 10.0.pow(GATE_DB / 10)
         val random = Random(seed)
-        val lowCutBin = ceil(LOW_CUT_HZ * n / sampleRate).toInt()
-        val gains = DoubleArray(half + 1) { k ->
-            if (k < lowCutBin) 0.0 else 0.75 + 0.5 * min(1.0, k.toDouble() * sampleRate / n / TILT_TOP_HZ)
+        val out = DoubleArray(padded.size)
+        val frame = DoubleArray(n)
+        val noise = DoubleArray(n)
+        val shaped = DoubleArray(n)
+
+        for ((f, start) in starts.withIndex()) {
+            if (energies[f] <= gate || energies[f] <= 0.0) continue
+            for (i in 0 until n) frame[i] = padded[start + i] * window[i]
+            val (a, err) = lpc(frame, order) ?: continue
+            var g = 1.0
+            for (k in 0..order) {
+                a[k] *= g
+                g *= BANDWIDTH_EXPANSION
+            }
+            val sigma = sqrt(max(err, 0.0) / windowEnergy)
+            for (i in 0 until n) noise[i] = random.nextGaussian() * sigma
+            allPole(a, noise, shaped)
+            for (i in 0 until n) out[start + i] += shaped[i] * window[i]
         }
 
-        var start = 0
-        while (start + n <= total) {
-            for (i in 0 until n) {
-                val src = start + i - n
-                re[i] = (if (src in input.indices) input[src].toDouble() else 0.0) * window[i]
-                im[i] = 0.0
-            }
-            fft(re, im, inverse = false)
-            for (k in 0..half) {
-                val mag = hypot(re[k], im[k]) * gains[k]
-                if (k == 0 || k == half) {
-                    re[k] = mag
-                    im[k] = 0.0
-                } else {
-                    val phase = random.nextDouble() * 2 * PI
-                    re[k] = mag * cos(phase)
-                    im[k] = mag * sin(phase)
-                    re[n - k] = re[k]
-                    im[n - k] = -im[k]
-                }
-            }
-            fft(re, im, inverse = true)
-            for (i in 0 until n) {
-                acc[start + i] += re[i] * window[i]
-                norm[start + i] += window[i] * window[i]
-            }
-            start += hop
+        // Deshace casi todo el realce de agudos (si no, suena a siseo áspero) y quita graves.
+        val c = exp(-2 * PI * HIGH_PASS_HZ / sampleRate)
+        val result = DoubleArray(input.size)
+        var de = 0.0
+        var hpPrevIn = 0.0
+        var hpPrevOut = 0.0
+        for (i in input.indices) {
+            de = out[i + n] + DE_EMPHASIS * de
+            hpPrevOut = c * (hpPrevOut + de - hpPrevIn)
+            hpPrevIn = de
+            result[i] = hpPrevOut
         }
 
-        val out = DoubleArray(input.size) { i ->
-            val j = i + n
-            if (norm[j] > 1e-6) acc[j] / norm[j] else 0.0
-        }
-        val max = out.maxOf { abs(it) }
-        if (max < 1e-6) return ShortArray(input.size)
-        val gain = peak * Short.MAX_VALUE / max
+        val maxAbs = result.maxOf { abs(it) }
+        if (maxAbs < 1e-6) return ShortArray(input.size)
+        val gain = peak * Short.MAX_VALUE / maxAbs
         return ShortArray(input.size) {
-            (out[it] * gain).roundToInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+            (result[it] * gain).roundToInt().coerceIn(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
         }
     }
 
-    /** Ventanas de ~12 ms: lo bastante cortas para no separar los armónicos de la voz. */
-    internal fun frameSizeFor(sampleRate: Int): Int =
-        Integer.highestOneBit((sampleRate * 0.012).toInt()).coerceIn(64, 1024)
+    internal fun frameSizeFor(sampleRate: Int): Int = ((sampleRate * FRAME_SECONDS).toInt() and 1.inv()).coerceAtLeast(64)
 
-    private fun fft(re: DoubleArray, im: DoubleArray, inverse: Boolean) {
-        val n = re.size
-        var j = 0
-        for (i in 1 until n) {
-            var bit = n shr 1
-            while (j and bit != 0) {
-                j = j xor bit
-                bit = bit shr 1
-            }
-            j = j xor bit
-            if (i < j) {
-                var t = re[i]; re[i] = re[j]; re[j] = t
-                t = im[i]; im[i] = im[j]; im[j] = t
-            }
+    internal fun lpcOrderFor(sampleRate: Int): Int = min(32, sampleRate / 1000 + 4)
+
+    /** Levinson-Durbin sobre la autocorrelación. Devuelve coeficientes (a[0] = 1) y error residual. */
+    private fun lpc(frame: DoubleArray, order: Int): Pair<DoubleArray, Double>? {
+        val r = DoubleArray(order + 1) { k ->
+            var s = 0.0
+            for (i in 0 until frame.size - k) s += frame[i] * frame[i + k]
+            s
         }
-        var len = 2
-        while (len <= n) {
-            val angle = 2 * PI / len * if (inverse) 1 else -1
-            val wRe = cos(angle)
-            val wIm = sin(angle)
-            var i = 0
-            while (i < n) {
-                var curRe = 1.0
-                var curIm = 0.0
-                for (k in 0 until len / 2) {
-                    val a = i + k
-                    val b = a + len / 2
-                    val tRe = re[b] * curRe - im[b] * curIm
-                    val tIm = re[b] * curIm + im[b] * curRe
-                    re[b] = re[a] - tRe
-                    im[b] = im[a] - tIm
-                    re[a] += tRe
-                    im[a] += tIm
-                    val next = curRe * wRe - curIm * wIm
-                    curIm = curRe * wIm + curIm * wRe
-                    curRe = next
-                }
-                i += len
-            }
-            len = len shl 1
+        if (r[0] <= 1e-9) return null
+        r[0] *= 1.0001
+        val a = DoubleArray(order + 1).also { it[0] = 1.0 }
+        val tmp = DoubleArray(order + 1)
+        var err = r[0]
+        for (i in 1..order) {
+            var acc = r[i]
+            for (j in 1 until i) acc += a[j] * r[i - j]
+            val k = -acc / err
+            a.copyInto(tmp)
+            for (j in 1 until i) a[j] = tmp[j] + k * tmp[i - j]
+            a[i] = k
+            err *= 1 - k * k
+            if (err <= 0.0) return null
         }
-        if (inverse) {
-            for (i in 0 until n) {
-                re[i] /= n
-                im[i] /= n
-            }
+        return a to err
+    }
+
+    private fun allPole(a: DoubleArray, x: DoubleArray, y: DoubleArray) {
+        val order = a.size - 1
+        for (i in x.indices) {
+            var s = x[i]
+            for (k in 1..min(order, i)) s -= a[k] * y[i - k]
+            y[i] = s
         }
     }
 }

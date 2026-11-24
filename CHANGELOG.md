@@ -5,6 +5,12 @@ Los cambios de contenido del catálogo indican el `schema_version`.
 
 ## [Sin publicar]
 
+## [0.3.1] - 2026-11-24
+
+### Cambiado
+- Susurro rehecho con LPC: en cada fragmento de 25 ms se estima la forma de la boca y se la excita con soplido en lugar de voz. Suena a susurro real, sin el ruido granulado de la versión 0.3.0.
+- "No volver a preguntar durante" ahora incluye 1 minuto.
+
 ## [0.3.0] - 2026-11-24 — freno al impulso
 
 ### Agregado (F7 — freno al impulso)
