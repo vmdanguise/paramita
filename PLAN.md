@@ -39,47 +39,47 @@
 - [x] **T-104** `ManiTheme` + `ManiTypography` con la paleta de paramita.org (spec UI REQ-040) y test de contraste AA.
 - [x] **T-105** `MainActivity` con `enableEdgeToEdge` y una bienvenida serena. El permiso de notificaciones **no** se pide al abrir (AC-005); se pide al iniciar la primera práctica → queda para **T-406**.
 - [x] **T-106** Recursos: `strings.xml` en español, íconos `ic_lotus_calm`, `ic_play_calm`, `ic_pause_calm`, `ic_stop_calm` (vectoriales, originales), launcher adaptativo (rueda de oración).
-- [~] **T-107** CI mínima (GitHub Actions) escrita en `.github/workflows/android.yml`. Falta verla correr: necesita repo en GitHub (T-005).
+- [x] **T-107** CI mínima (GitHub Actions) en `.github/workflows/android.yml`: primera corrida en verde (build, tests, lint y APK).
 - [x] **T-108** AC-003: `assembleRelease` firmado con la clave de debug abre bien en el celular de Vicente (release v0.1.0, 2026-11-24).
 
 ## F2 — Datos (specs: `spec-schema-base-datos-room.md`, `spec-data-catalogo-json.md`)
 
-- [ ] **T-201** Entidades Room (8 tablas) + `TypeConverters` para los JSON de listas.
-- [ ] **T-202** Relaciones `PracticeWithDetails` (con `orderedSegments`, `mantraConfig`, `tags`, `jewels`) y `SessionWithPractice`.
-- [ ] **T-203** DAOs: `PracticeDao` (incluye `getPracticeByIdOnce`, `replaceCatalogBundle`), `PracticeSessionDao`, `MeritAndCalmDao`, `MindfulAppTargetDao`.
-- [ ] **T-204** `ManiDatabase` v1 + exportar el esquema a `app/schemas/`.
-- [ ] **T-205** DTOs del catálogo + `CatalogMapper` (normalización y conservación de favoritos).
-- [ ] **T-206** `CatalogSeeder` (`seeded_schema_version` en SharedPreferences, sin bloquear el hilo principal).
-- [ ] **T-207** `ManiApplication` (DB lazy, holders, siembra en `onCreate`).
-- [ ] **T-208** Tests: mapper (unit), DAOs (instrumentado o Robolectric), seeder (conserva favoritos al subir de versión).
-- [ ] **T-209** Decidir la política de migraciones antes de la primera release (ver ADR-0003): FK de sesiones (`is_archived` vs. `SET NULL`) y columna `outcome` en eventos.
+- [x] **T-201** Entidades Room (8 tablas). Las listas se guardan como texto JSON y se parsean en `toPracticeRunSpec()` (no hizo falta `TypeConverter`).
+- [x] **T-202** Relaciones `PracticeWithDetails` (con `orderedSegments`, `mantraConfig`, `tags`, `jewels`) y `SessionWithPractice`.
+- [x] **T-203** DAOs: `PracticeDao` (incluye `getPracticeByIdOnce`, `replaceCatalogBundle`), `PracticeSessionDao`, `MeritAndCalmDao`, `MindfulAppTargetDao`.
+- [x] **T-204** `ManiDatabase` v1 + exportar el esquema a `app/schemas/`.
+- [x] **T-205** DTOs del catálogo + `CatalogMapper` (normalización y conservación de favoritos).
+- [x] **T-206** `CatalogSeeder` (`seeded_schema_version` en SharedPreferences, sin bloquear el hilo principal).
+- [x] **T-207** `ManiApplication` (DB lazy, holders, siembra en `onCreate`).
+- [x] **T-208** Tests: mapper (unit), DAOs (instrumentado o Robolectric), seeder (conserva favoritos al subir de versión).
+- [x] **T-209** Decidir la política de migraciones antes de la primera release (ver ADR-0003): FK de sesiones (`is_archived` vs. `SET NULL`) y columna `outcome` en eventos.
 
 ## F3 — Motor (spec: `spec-architecture-motor-practica-tts.md`)
 
-- [ ] **T-301** Modelos `RunnerStatus`, `RecitationMode`, `PracticeSegmentModel`, `MantraRunConfig`, `PracticeRunSpec`, `RunnerSnapshot`.
-- [ ] **T-302** Interfaz `SpeechPort` (abstracción para testear) + `SpeechAndBellController` real (TTS es-AR→es-ES, `speakAndAwait` suspendible, `SoundPool`, respaldo `ToneGenerator`).
-- [ ] **T-303** `PracticeRunnerEngine`: segmentos, repeticiones, bucle de mantra, campana cada N, pausa, reanudación y stop.
-- [ ] **T-304** Corregir los bugs conocidos del borrador (ver spec: CON-001 `scope.isActive` vs. `coroutineContext.isActive`, CON-003 carrera en la inicialización de TTS, REQ-011 mantra recitado una vez de más, REQ-022 reanudación en la misma etapa).
-- [ ] **T-305** Mapper `PracticeWithDetails.toPracticeRunSpec()`.
-- [ ] **T-306** Tests unitarios del motor con `kotlinx-coroutines-test` y un `SpeechPort` falso.
-- [ ] **T-307** Agregar `res/raw/bell_soft.ogg` (sonido con licencia libre o propio, documentado en `docs/creditos-audio.md`).
+- [x] **T-301** Modelos `RunnerStatus`, `RecitationMode`, `PracticeSegmentModel`, `MantraRunConfig`, `PracticeRunSpec`, `RunnerSnapshot`.
+- [x] **T-302** Interfaz `SpeechPort` + `SpeechAndBellController` real (TTS es-AR→es-ES, `speakAndAwait` suspendible). La campana se sintetiza en código con `AudioTrack` (sin audio de terceros), con respaldo `ToneGenerator`.
+- [x] **T-303** `PracticeRunnerEngine`: segmentos, repeticiones, bucle de mantra, campana cada N, pausa, reanudación y stop.
+- [x] **T-304** Corregir los bugs conocidos del borrador (ver spec: CON-001 `scope.isActive` vs. `coroutineContext.isActive`, CON-003 carrera en la inicialización de TTS, REQ-011 mantra recitado una vez de más, REQ-022 reanudación en la misma etapa).
+- [x] **T-305** Mapper `PracticeWithDetails.toPracticeRunSpec()`.
+- [x] **T-306** Tests unitarios del motor con `kotlinx-coroutines-test` y un `SpeechPort` falso.
+- [~] **T-307** Mientras Q-04 siga abierta, la campana es sintetizada (propia, sin licencia de terceros). Si se elige un `bell_soft.ogg`, documentarlo en `docs/creditos-audio.md`.
 
 ## F4 — Servicio (spec: `spec-architecture-servicio-reproduccion.md`)
 
-- [ ] **T-401** `PracticePlaybackService` (FGS `mediaPlayback`) con `ACTION_*`, `EXTRA_*` y `sessionState` estático.
-- [ ] **T-402** Notificación serena (`setOnlyAlertOnce`), acciones Pausar/Reanudar/Detener, canal de baja importancia.
-- [ ] **T-403** Implementar `persistSession` (hoy es un stub): insertar y actualizar `practice_sessions`.
-- [ ] **T-404** `rememberPracticeServiceState()` para Compose.
-- [ ] **T-405** Prueba manual: bloquear la pantalla, cambiar de app y usar las acciones de la notificación.
-- [ ] **T-406** Pedir `POST_NOTIFICATIONS` (API 33+) la primera vez que se inicia una práctica, nunca al abrir (spec build REQ-009).
+- [x] **T-401** `PracticePlaybackService` (FGS `mediaPlayback`) con `ACTION_*`, `EXTRA_*` y `sessionState` estático.
+- [x] **T-402** Notificación serena (`setOnlyAlertOnce`), acciones Pausar/Reanudar/Detener, canal de baja importancia.
+- [x] **T-403** `persistSession`: inserta en `practice_sessions` (las sesiones de menos de 5 s no se guardan) y publica `lastFinishedSessionId`.
+- [x] **T-404** `rememberPracticeServiceState()` para Compose.
+- [ ] **T-405** *(pendiente en el celular de Vicente)* Prueba manual: bloquear la pantalla, cambiar de app y usar las acciones de la notificación.
+- [x] **T-406** Pedir `POST_NOTIFICATIONS` (API 33+) la primera vez que se inicia una práctica, nunca al abrir (spec build REQ-009).
 
 ## F5 — UI y navegación (spec: `spec-design-ui-navegacion.md`)
 
-- [ ] **T-501** `ManiViewModel` + factory.
-- [ ] **T-502** `ManiNavGraph` con las rutas `home`, `practice/{practiceId}`, `impulse_pause`, `mindful_targets`, `three_jewels?jewel={jewel}`, `faq`.
-- [ ] **T-503** `RefugeHomeScreen` (práctica del día, continuar sesión, freno, semillas, Tres Joyas, FAQ).
-- [ ] **T-504** `PracticeRunnerScreen` (texto, transliteración, significado, contador, modos, presets y dedicación).
-- [ ] **T-505** Accesibilidad de la UI: TalkBack, tamaños de fuente grandes y contraste AA.
+- [x] **T-501** `ManiViewModel` + factory.
+- [~] **T-502** `ManiNavGraph` con `home`, `practice/{practiceId}` y `faq`. `impulse_pause`, `mindful_targets` y `three_jewels` llegan en F6/F7 (la pausa de impulso ya se puede hacer como práctica guiada).
+- [~] **T-503** `RefugeHomeScreen`: práctica del día (rotación diaria, propuesta de Q-06), continuar sesión, tarjeta de pausa de impulso, FAQ, enlaces de la lista blanca y "empezar con el refugio en susurro". Faltan semillas y Tres Joyas (F6).
+- [x] **T-504** `PracticeRunnerScreen` (texto, transliteración, significado, contador, modos, presets y dedicación).
+- [~] **T-505** Accesibilidad: botones de 52 dp, roles semánticos, scroll en todas las pantallas y contraste AA testeado. Falta la revisión con TalkBack y la fuente al 200 % en un teléfono.
 
 ## F6 — Semillas, Tres Joyas y FAQ (specs: `spec-design-semillas-merito.md`, `spec-design-tres-joyas-paramita.md`, `spec-process-etica-contenido-faq.md`)
 

@@ -2,9 +2,89 @@
 <resources xmlns:tools="http://schemas.android.com/tools" tools:locale="es">
     <string name="app_name">Mani</string>
     <string name="app_tagline">Oraciones, mantras y pausa consciente</string>
-    <string name="welcome_placeholder">Esta es una versión en construcción: por ahora solo tiene esta pantalla. Las oraciones, mantras y meditaciones llegan en las próximas versiones. Mientras tanto, si querés, tomate un momento para respirar.</string>
 
-    <string name="cd_play">Comenzar</string>
-    <string name="cd_pause">Pausar</string>
-    <string name="cd_stop">Detener</string>
+    <!-- Inicio -->
+    <string name="home_title">Hoy en el camino</string>
+    <string name="home_faq">Preguntas</string>
+    <string name="home_preparing">Preparando las prácticas…</string>
+    <string name="home_featured">Práctica del día</string>
+    <string name="home_all_practices">Prácticas</string>
+    <string name="banner_playing">Sonando ahora · tocá para ver</string>
+    <string name="banner_paused">En pausa · tocá para retomar</string>
+    <string name="impulse_card_title">¿Sentís el impulso de comprar o scrollear sin rumbo?</string>
+    <string name="impulse_card_body">Si querés, tomate dos minutos de pausa antes de decidir.</string>
+    <string name="practice_meta">%1$s · %2$d min</string>
+    <string name="type_prayer">Oración</string>
+    <string name="type_mantra">Mantra</string>
+    <string name="type_meditation">Meditación guiada</string>
+    <string name="type_pause">Pausa consciente</string>
+    <plurals name="week_moments">
+        <item quantity="one">Esta semana dedicaste %d momento a la práctica.</item>
+        <item quantity="many">Esta semana dedicaste %d momentos a la práctica.</item>
+        <item quantity="other">Esta semana dedicaste %d momentos a la práctica.</item>
+    </plurals>
+    <string name="week_welcome">Te damos la bienvenida. La práctica se retoma desde donde estás.</string>
+    <string name="setting_start_refuge">Empezar con el refugio en susurro</string>
+    <string name="setting_start_refuge_hint">Al abrir Mani se recita la oración de refugio en voz baja. Podés pausarla o detenerla cuando quieras.</string>
+    <string name="links_title">Paramita</string>
+    <string name="links_disclaimer">Mani es una herramienta de apoyo independiente. Las enseñanzas, encuentros y cursos están en los canales oficiales.</string>
+    <string name="link_meditate">Medita con nosotros</string>
+    <string name="link_courses">Cursos</string>
+    <string name="link_home">Ir a paramita.org</string>
+
+    <!-- Práctica -->
+    <string name="practice_screen_title">Práctica</string>
+    <string name="practice_not_available">Esta práctica ya no está disponible.</string>
+    <string name="practice_header_meta">%1$s · %2$s</string>
+    <string name="progress_segment">Segmento %1$d de %2$d</string>
+    <string name="progress_round">Vuelta %1$d de %2$d</string>
+    <string name="progress_repetition">Repetición %1$d de %2$d</string>
+    <string name="progress_paused">En pausa</string>
+    <string name="pause_indicator">Pausa contemplativa · %d s</string>
+    <string name="mode_title">Modo de recitación</string>
+    <string name="mode_spoken">Voz clara</string>
+    <string name="mode_whisper">Susurro</string>
+    <string name="mode_mental">Mental</string>
+    <string name="reps_title">Vueltas</string>
+    <string name="reps_chip">%d</string>
+    <string name="meaning_show">Ver significado</string>
+    <string name="meaning_hide">Ocultar significado</string>
+    <string name="keep_screen_on">Mantener la pantalla encendida</string>
+    <string name="background_hint">La práctica sigue aunque bloquees el teléfono o cambies de app.</string>
+    <string name="action_start">Comenzar</string>
+    <string name="action_pause">Pausar</string>
+    <string name="action_resume">Reanudar</string>
+    <string name="action_stop">Detener</string>
+    <string name="action_back">Volver</string>
+    <string name="action_dedicate">Dedicar el mérito</string>
+    <string name="action_return_without_guilt">Volver sin dedicar</string>
+    <string name="dedication_completed">Práctica completa. Si querés, dedicá el mérito:</string>
+    <string name="dedication_stopped">Lo practicado también cuenta. Si querés, dedicá el mérito:</string>
+
+    <!-- Notificación -->
+    <string name="notif_channel_name">Práctica en curso</string>
+    <string name="notif_channel_description">Muestra la práctica que está sonando, sin sonido ni vibración.</string>
+    <string name="notif_preparing">Preparando la práctica…</string>
+    <string name="notif_round_of">Vuelta %1$d de %2$d · %3$s</string>
+    <string name="notif_segment_of">Segmento %1$d de %2$d</string>
+    <string name="notif_with_pause">%1$s · Pausa %2$d s</string>
+    <string name="notif_paused">%1$s · En pausa</string>
+    <string name="notif_completed_title">Práctica completa</string>
+    <string name="notif_completed_text">Que el mérito beneficie a todos los seres</string>
+
+    <!-- Preguntas frecuentes: texto aprobado (spec-process-etica-contenido-faq §4.2) -->
+    <string name="faq_title">Preguntas frecuentes</string>
+    <string name="faq_q1">¿Esta app reemplaza a un maestro, un lama o los canales oficiales de Paramita?</string>
+    <string name="faq_a1">No. La APK es una herramienta de apoyo cotidiano para organizar oraciones, contar repeticiones de mantras, acompañar meditaciones guiadas, fomentar el amor bondadoso y ayudarte a frenar impulsos en el teléfono. Las enseñanzas profundas, las dudas doctrinales, las transmisiones o el seguimiento espiritual corresponden a los canales oficiales de paramita.org y al acompañamiento de un maestro o guía calificado.</string>
+    <string name="faq_q2">¿Por qué no hay \"logros\" de nivel espiritual o despertar?</string>
+    <string name="faq_a2">Porque convertir la práctica budista en medallas de superioridad o etapas de \"iluminación\" alimenta el mismo apego y orgullo que la práctica busca soltar. Los hitos de la app son solo recordatorios de hábito saludable, amor bondadoso y generosidad, siempre orientados a la dedicatoria del mérito.</string>
+    <string name="faq_q3">¿Cómo ayuda realmente a dejar de comprar por impulso o calmar el uso del celular?</string>
+    <string name="faq_a3">No actúa como un bloqueo punitivo, sino como una pausa lúcida: te da unos segundos para respirar, notar qué emoción hay detrás del impulso (cansancio, ansiedad, aburrimiento, búsqueda de consuelo rápido), cultivar maitri y elegir conscientemente si querés soltar la pantalla o continuar con claridad.</string>
+    <string name="faq_q4">¿Funciona sin conexión a internet?</string>
+    <string name="faq_a4">Sí. El catálogo, la base local, el contador de repeticiones, la voz en español y la reproducción en segundo plano funcionan sin conexión, y los enlaces a paramita.org solo se abren cuando vos decidís visitarlos.</string>
+    <string name="faq_q5">¿Qué pasa si un día me distraigo, compro algo impulsivamente o no medito?</string>
+    <string name="faq_a5">Nada se rompe ni se penaliza. La práctica se retoma desde donde estás, con amabilidad y sin culpa: observar el tropiezo con lucidez ya es parte del aprendizaje.</string>
+    <string name="about_independent">Mani es un proyecto independiente: no es una app oficial de Paramita ni habla en su nombre.</string>
+    <string name="about_content_review">Los textos de las prácticas están en revisión editorial y pueden cambiar.</string>
+    <string name="about_privacy">Tus datos de práctica quedan en el teléfono. Mani no usa internet ni analíticas; solo tu copia de seguridad de Google, si la tenés activada, puede incluirlos.</string>
 </resources>

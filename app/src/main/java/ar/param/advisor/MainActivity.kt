@@ -1,93 +1,93 @@
 package ar.param.advisor
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
+import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
+import ar.param.advisor.data.settings.ManiSettings
+import ar.param.advisor.engine.PlaybackOverrides
+import ar.param.advisor.engine.RecitationMode
+import ar.param.advisor.service.PracticePlaybackService
+import ar.param.advisor.ui.ManiViewModel
+import ar.param.advisor.ui.navigation.ManiNavGraph
+import ar.param.advisor.ui.navigation.NavRequest
 import ar.param.advisor.ui.theme.ManiTheme
+import kotlinx.coroutines.launch
 
 /**
- * Punto de entrada. En F1 muestra una pantalla de bienvenida serena.
- * No pide permisos al abrir (AC-005): POST_NOTIFICATIONS se pide la primera vez
- * que se inicia una práctica (REQ-009, se implementa con el servicio en F4/F5).
+ * Punto de entrada. No pide permisos al abrir (AC-005): POST_NOTIFICATIONS se pide
+ * la primera vez que el usuario toca "Comenzar" (REQ-009).
  */
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: ManiViewModel by viewModels { ManiViewModel.Factory }
+    private var navRequest by mutableStateOf<NavRequest?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            if (!handleOpenActive(intent)) maybeStartRefugeWhisper()
+        }
         setContent {
             ManiTheme {
-                WelcomePlaceholder()
+                ManiNavGraph(
+                    viewModel = viewModel,
+                    navRequest = navRequest,
+                    onNavRequestHandled = { navRequest = null },
+                )
             }
         }
     }
-}
 
-@Composable
-private fun WelcomePlaceholder() {
-    Scaffold { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 32.dp, vertical = 48.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_lotus_calm),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(72.dp),
-            )
-            Spacer(Modifier.height(24.dp))
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.displaySmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = stringResource(R.string.app_tagline),
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onBackground,
-                textAlign = TextAlign.Center,
-            )
-            Spacer(Modifier.height(32.dp))
-            Text(
-                text = stringResource(R.string.welcome_placeholder),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleOpenActive(intent)
+    }
+
+    private fun handleOpenActive(intent: Intent?): Boolean {
+        if (intent?.getBooleanExtra(EXTRA_OPEN_ACTIVE_PRACTICE, false) != true) return false
+        val id = PracticePlaybackService.sessionState.value.practiceId ?: return false
+        navRequest = NavRequest(id)
+        return true
+    }
+
+    /**
+     * Al abrir la app, recita en susurro la oración de refugio (pedido de Vicente).
+     * Se puede desactivar desde Inicio. Si ya hay una práctica sonando, no la interrumpe.
+     */
+    private fun maybeStartRefugeWhisper() {
+        val app = application as ManiApplication
+        if (!app.settings.startWithRefuge.value) return
+        val active = PracticePlaybackService.sessionState.value
+        if (active.isActive) {
+            active.practiceId?.let { navRequest = NavRequest(it) }
+            return
+        }
+        lifecycleScope.launch {
+            app.catalogSeed.await()
+            if (app.practiceDao.getPracticeByIdOnce(ManiSettings.REFUGE_PRACTICE_ID) == null) return@launch
+            // Con la Activity visible: Android no permite iniciar un servicio en primer plano desde segundo plano.
+            withResumed {
+                if (PracticePlaybackService.sessionState.value.isActive) return@withResumed
+                PracticePlaybackService.startPractice(
+                    this@MainActivity,
+                    ManiSettings.REFUGE_PRACTICE_ID,
+                    PlaybackOverrides(mode = RecitationMode.WHISPER),
+                )
+                navRequest = NavRequest(ManiSettings.REFUGE_PRACTICE_ID)
+            }
         }
     }
-}
 
-@Preview(showBackground = true)
-@Composable
-private fun WelcomePlaceholderPreview() {
-    ManiTheme { WelcomePlaceholder() }
+    companion object {
+        const val EXTRA_OPEN_ACTIVE_PRACTICE = "ar.param.advisor.extra.OPEN_ACTIVE_PRACTICE"
+    }
 }

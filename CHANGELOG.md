@@ -5,6 +5,36 @@ Los cambios de contenido del catálogo indican el `schema_version`.
 
 ## [Sin publicar]
 
+## [0.2.0] - 2026-11-24 · primera versión usable
+
+### Agregado (F2 · datos)
+- Room `ManiDatabase` v1 (`mani.db`, 8 tablas) con el esquema exportado a `app/schemas/`. 4 DAOs. `replaceCatalogBundle` solo hace upsert y archiva lo que falta (nunca borra historial).
+- `CatalogMapper`: alias de tipos y fases, rechaza tipos o fases desconocidos, valida según REQ-008 y conserva los favoritos. `CatalogSeeder` lee el catálogo y lo siembra fuera del hilo principal; si el JSON está roto, conserva la base anterior.
+- `ManiApplication` (inyección manual) y `ManiSettings`.
+
+### Agregado (F3 · motor)
+- `PracticeRunnerEngine`: segmentos, repeticiones y pausas contemplativas; bucle de mantra con campana cada N, sin recitar una vuelta de más (REQ-011); pausa y reanuda en la misma etapa (REQ-022); modos voz clara, susurro y mental.
+- `SpeechAndBellController`: TTS del sistema (es-AR → es-ES), espera real a que termine cada frase y una campana sintetizada en código (sin audio de terceros, Q-04 sigue abierta).
+
+### Agregado (F4 · servicio)
+- `PracticePlaybackService` (foreground `mediaPlayback`): sigue sonando con la pantalla bloqueada. Notificación silenciosa con Pausar/Reanudar/Detener, foco de audio (se pausa ante una llamada) y registro de sesiones (no se guardan las de menos de 5 s).
+- El permiso de notificaciones se pide la primera vez que tocás "Comenzar", nunca al abrir.
+
+### Agregado (F5 · UI)
+- Inicio: práctica del día (rotación diaria, la propuesta de Q-06), continuar la sesión en curso, tarjeta de pausa de impulso, momentos de la semana sin rachas ni culpa, enlaces de la lista blanca de paramita.org.
+- Pantalla de práctica: texto, transliteración, significado, progreso, modo de recitación, vueltas (3/7/21/108), mantener la pantalla encendida y la dedicación del mérito al terminar o detener.
+- Preguntas frecuentes con el texto aprobado de la spec de ética, más avisos de independencia, revisión editorial y privacidad.
+- **Al abrir la app se recita en susurro la oración de refugio** (pedido de Vicente). Se puede desactivar desde Inicio. No interrumpe una práctica que ya está sonando.
+- 20 tests nuevos: motor (AC-001..AC-005), mapper, el catálogo real y la DB más la siembra con Robolectric (SDK 35).
+
+### Cambiado
+- Catálogo `schema_version` 3: los textos guía pasan a voseo (Q-03). No hay cambios de contenido.
+- `spec-schema-base-datos-room.md` v1.1: columna `merit_and_calm_events.outcome` (T-209). ADR-0003 aceptado.
+- `spec-process-etica-contenido-faq.md` v1.1: GUD-001 con voseo también en el catálogo.
+- Q-08: el historial entra en el backup de Google (`allowBackup="true"`).
+
+## [0.1.0] - 2026-11-24
+
 ### Agregado (F1 · esqueleto Android)
 - Proyecto Gradle de un módulo: wrapper Gradle 9.9.2, `gradle/libs.versions.toml`, `settings.gradle.kts`, `app/build.gradle.kts`, `proguard-rules.pro` (reglas de `kotlinx.serialization`).
 - Versiones elegidas (últimas estables al 2026-11-24): AGP 9.5.2, Kotlin 2.4.21, KSP 2.3.14, Compose BOM 2026.11.01, core-ktx 1.19.1, activity-compose 1.13.0, lifecycle 2.11.1, Navigation 2.10.2, Room 2.8.5, coroutines 1.11.0, serialization-json 1.13.0, JUnit 4.13.2, Turbine 1.2.1, Robolectric 4.18.1.
