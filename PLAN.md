@@ -40,7 +40,7 @@
 - [x] **T-105** `MainActivity` con `enableEdgeToEdge` y una bienvenida serena. El permiso de notificaciones **no** se pide al abrir (AC-005); se pide al iniciar la primera práctica → queda para **T-406**.
 - [x] **T-106** Recursos: `strings.xml` en español, íconos `ic_lotus_calm`, `ic_play_calm`, `ic_pause_calm`, `ic_stop_calm` (vectoriales, originales), launcher adaptativo (rueda de oración).
 - [~] **T-107** CI mínima (GitHub Actions) escrita en `.github/workflows/android.yml`. Falta verla correr: necesita repo en GitHub (T-005).
-- [ ] **T-108** AC-003: probar `assembleRelease` firmado con la clave de debug en un celular (la APK release sin firmar ya compila con R8).
+- [x] **T-108** AC-003: `assembleRelease` firmado con la clave de debug abre bien en el celular de Vicente (release v0.1.0, 2026-11-24).
 
 ## F2 — Datos (specs: `spec-schema-base-datos-room.md`, `spec-data-catalogo-json.md`)
 
