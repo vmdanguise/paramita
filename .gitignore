@@ -1,0 +1,36 @@
+# Gradle / Android
+.gradle/
+build/
+*/build/
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+output-metadata.json
+
+# Android Studio / IntelliJ
+.idea/
+*.iml
+.navigation/
+
+# Firma (nunca versionar)
+*.jks
+*.keystore
+keystore.properties
+
+# Kotlin
+.kotlin/
+
+# SO
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# NO ignorar: app/schemas/ (esquema exportado de Room, se versiona)

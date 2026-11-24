@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:locale="es">
+    <string name="app_name">Mani</string>
+    <string name="app_tagline">Oraciones, mantras y pausa consciente</string>
+    <string name="welcome_placeholder">Estamos preparando las prácticas. Mientras tanto, si querés, tomate un momento para respirar.</string>
+
+    <string name="cd_play">Comenzar</string>
+    <string name="cd_pause">Pausar</string>
+    <string name="cd_stop">Detener</string>
+</resources>

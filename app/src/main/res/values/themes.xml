@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema de ventana (antes de que Compose dibuje). Los colores reales viven en ManiTheme. -->
+    <style name="Theme.Mani" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/mani_window_background</item>
+    </style>
+</resources>

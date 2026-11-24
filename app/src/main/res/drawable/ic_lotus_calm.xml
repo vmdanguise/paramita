@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Loto de tres pétalos, diseño original (no es el logo de Paramita). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M12,3C14.5,6 14.5,10.5 12,14C9.5,10.5 9.5,6 12,3Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,9C7,9.5 10,12 11,15.5C7.5,16 4,13.5 3,9Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M21,9C17,9.5 14,12 13,15.5C16.5,16 20,13.5 21,9Z" />
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M4,17.5C8,16.5 16,16.5 20,17.5C16,20 8,20 4,17.5Z" />
+</vector>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Rueda de oración (mani) estilizada, diseño original. Todo dentro de la zona segura de 66 dp. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- remate -->
+    <path
+        android:fillColor="#FF00C7E5"
+        android:pathData="M54,26.5A3.5,3.5 0,1 1,54 33.5A3.5,3.5 0,1 1,54 26.5Z" />
+    <!-- tapa superior -->
+    <path
+        android:fillColor="#FFFEF7E5"
+        android:pathData="M44,34L64,34A2,2 0,0 1,66 36L66,38L42,38L42,36A2,2 0,0 1,44 34Z" />
+    <!-- tambor -->
+    <path
+        android:fillColor="#FFFFAE00"
+        android:pathData="M40,38L68,38L68,62L40,62Z" />
+    <!-- franjas del tambor -->
+    <path
+        android:fillColor="#FFFEF7E5"
+        android:pathData="M40,44L68,44L68,46L40,46Z" />
+    <path
+        android:fillColor="#FFFEF7E5"
+        android:pathData="M40,54L68,54L68,56L40,56Z" />
+    <!-- tapa inferior -->
+    <path
+        android:fillColor="#FFFEF7E5"
+        android:pathData="M42,62L66,62L66,64A2,2 0,0 1,64 66L44,66A2,2 0,0 1,42 64Z" />
+    <!-- mango -->
+    <path
+        android:fillColor="#FFFEF7E5"
+        android:pathData="M52,66L56,66L56,82A2,2 0,0 1,52 82Z" />
+    <!-- cadena y contrapeso -->
+    <path
+        android:strokeColor="#FFFEF7E5"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round"
+        android:pathData="M68,50L76.5,57" />
+    <path
+        android:fillColor="#FF00C7E5"
+        android:pathData="M78.5,56A3,3 0,1 1,78.5 62A3,3 0,1 1,78.5 56Z" />
+</vector>

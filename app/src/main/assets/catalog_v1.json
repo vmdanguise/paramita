@@ -1,0 +1,339 @@
+{
+  "schema_version": 2,
+  "source": "paramita.org",
+  "generated_at": "2026-11-19",
+  "practices": [
+    {
+      "id": "prac_refugio_tres_joyas",
+      "type": "PRAYER",
+      "title": "Refugio en las Tres Joyas y Bodhicitta",
+      "subtitle": "Apertura de práctica en Buddha, Dharma y Sangha",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["BUDDHA", "DHARMA", "SANGHA"],
+      "tags": ["refugio", "apertura", "intencion", "sangha"],
+      "estimated_minutes": 3,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 120,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "MOTIVATION",
+          "heading": "Refugio y motivación",
+          "text": "Tomo refugio hasta el despertar en el Buddha, el Dharma y la Sangha suprema. Por el mérito de practicar generosidad y demás perfecciones, que alcance el despertar en beneficio de todos los seres.",
+          "transliteration": null,
+          "meaning": "Orientar la mente hacia las Tres Joyas y el bienestar de los demás antes de actuar.",
+          "pause_after_sec": 4,
+          "repeat_count": 3
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que por este refugio y esta intención clara se disuelva la confusión y nazca el beneficio para todos los seres.",
+      "paramita_ref": {
+        "section": "Prácticas y Textos",
+        "topic": "Refugio y Bodhicitta",
+        "url_path": "/es/"
+      }
+    },
+    {
+      "id": "prac_mantra_corazon",
+      "type": "MANTRA",
+      "title": "Mantra del Sutra del Corazón",
+      "subtitle": "Recitación con repeticiones y transición de voz a silencio",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["DHARMA"],
+      "tags": ["mantra", "sabiduria", "calma", "repeticion", "sutra_corazon"],
+      "estimated_minutes": 5,
+      "audio_asset_uri": "asset:///audio/mantra_prajnaparamita_sample.mp3",
+      "tts_enabled": true,
+      "default_pace_wpm": 110,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "CORE",
+          "heading": "Mantra de la Sabiduría",
+          "text": "Tayatha Om Gate Gate Paragate Parasamgate Bodhi Svaha",
+          "transliteration": "Tayatha Om Gate Gate Paragate Parasamgate Bodhi Svaha",
+          "meaning": "Ido, ido, ido más allá, ido completamente más allá, ¡despertar! Así sea.",
+          "pause_after_sec": 2,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": {
+        "target_repetitions": 21,
+        "preset_counts": [3, 7, 21, 108],
+        "recitation_modes": ["SPOKEN", "WHISPER", "MENTAL"],
+        "bell_every_n": 7,
+        "pause_between_reps_ms": 900
+      },
+      "merit_dedication": "Que el mérito de esta recitación nutra la claridad serena y libere del sufrimiento a todos los seres.",
+      "paramita_ref": {
+        "section": "Enseñanzas",
+        "topic": "Sutra del Corazón / Paramita de la Sabiduría",
+        "url_path": "/medita-con-nosotros/"
+      }
+    },
+    {
+      "id": "prac_med_amor_bondadoso",
+      "type": "GUIDED_MEDITATION",
+      "title": "Amor Bondadoso (Maitri) y Calma",
+      "subtitle": "Cultivar calidez serena hacia uno mismo y los demás",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["BUDDHA", "DHARMA", "SANGHA"],
+      "tags": ["amor_bondadoso", "maitri", "calma_mental", "compasion"],
+      "estimated_minutes": 10,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 115,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "POSTURE_BREATH",
+          "heading": "Cuerpo y respiración",
+          "text": "Siéntate con la espalda erguida pero sin rigidez. Suelta los hombros y la mandíbula. Acompaña tres respiraciones naturales sin forzarlas.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 12,
+          "repeat_count": 1
+        },
+        {
+          "order": 2,
+          "phase": "CORE",
+          "heading": "Amor bondadoso (Maitri)",
+          "text": "Que esté libre de peligro, que esté en paz, que su cuerpo y su mente encuentren alivio y bienestar.",
+          "transliteration": null,
+          "meaning": "Cultiva primero hacia uno mismo, luego hacia seres queridos, personas neutras y, con suavidad, hacia quienes generan fricción.",
+          "pause_after_sec": 15,
+          "repeat_count": 3
+        },
+        {
+          "order": 3,
+          "phase": "DEDICATION",
+          "heading": "Descansar y dedicar",
+          "text": "Deja que la mente descanse en esa apertura tranquila y dedica cualquier bien cultivado aquí al bienestar de todos los seres.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 8,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que este cultivo de amor bondadoso se convierta en causa de paz duradera para todos los seres.",
+      "paramita_ref": {
+        "section": "Meditación",
+        "topic": "Calma Mental y Cultivo del Corazón",
+        "url_path": "/medita-con-nosotros/"
+      }
+    },
+    {
+      "id": "prac_37_practicas_refugio_y_impermanencia",
+      "type": "GUIDED_MEDITATION",
+      "title": "37 Prácticas · Refugio, Impermanencia y Soltar el Apego",
+      "subtitle": "Contemplación inspirada en las 37 Prácticas de los Bodhisattvas",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["BUDDHA", "DHARMA"],
+      "tags": ["37_practicas", "bodhisattva", "impermanencia", "no_apego"],
+      "estimated_minutes": 8,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 115,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "MOTIVATION",
+          "heading": "Oportunidad valiosa",
+          "text": "Ahora que se ha obtenido esta vida con condiciones favorables para el Dharma, practicar, escuchar y reflexionar sin distraerse es la práctica de los bodhisattvas.",
+          "transliteration": null,
+          "meaning": "Recordar el valor de orientar la atención hacia lo que libera y no hacia la dispersión automática.",
+          "pause_after_sec": 10,
+          "repeat_count": 1
+        },
+        {
+          "order": 2,
+          "phase": "CONTEMPLATION",
+          "heading": "Impermanencia y apego",
+          "text": "Cuando el apego a los seres queridos agita la mente y la aversión hacia quienes dañan hace hervir la propia mente como fuego, abandonar el aferramiento es la práctica de los bodhisattvas.",
+          "transliteration": null,
+          "meaning": "Observar cómo el aferramiento y el rechazo agitan la mente y probar soltar aunque sea un poco.",
+          "pause_after_sec": 14,
+          "repeat_count": 2
+        },
+        {
+          "order": 3,
+          "phase": "CONTEMPLATION",
+          "heading": "Entornos que sostienen la calma",
+          "text": "Cuando los lugares donde surgen las emociones aflictivas van en aumento, abandonar el entorno que alimenta la dispersión es la práctica de los bodhisattvas.",
+          "transliteration": null,
+          "meaning": "Incluye elegir con cuidado qué espacios digitales, compras o estímulos sostienen tu paz mental.",
+          "pause_after_sec": 12,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que la comprensión de la impermanencia y el soltar del apego se conviertan en alivio para todos los seres.",
+      "paramita_ref": {
+        "section": "Enseñanzas y Cursos",
+        "topic": "37 Prácticas de los Bodhisattvas",
+        "url_path": "/"
+      }
+    },
+    {
+      "id": "prac_37_practicas_generosidad_y_paciencia",
+      "type": "GUIDED_MEDITATION",
+      "title": "37 Prácticas · Generosidad sin Apego y Paciencia",
+      "subtitle": "Cultivar generosidad, ética serena y paciencia ante la fricción",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["DHARMA", "SANGHA"],
+      "tags": ["37_practicas", "generosidad", "paciencia", "paramitas", "merito"],
+      "estimated_minutes": 8,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 118,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "CORE",
+          "heading": "Generosidad genuina",
+          "text": "Ofrecer sin esperar recompensa ni retorno todo lo que se posee —cuerpo, posesiones y virtudes pasadas, presentes y futuras— es la práctica de los bodhisattvas.",
+          "transliteration": null,
+          "meaning": "La verdadera generosidad alivia el aferramiento y abre el corazón hacia los demás.",
+          "pause_after_sec": 12,
+          "repeat_count": 1
+        },
+        {
+          "order": 2,
+          "phase": "CONTEMPLATION",
+          "heading": "Paciencia frente al daño o la molestia",
+          "text": "Incluso si alguien te corta la cabeza o te ofende, no albergar ni un instante de resentimiento hacia esa persona es la práctica de los bodhisattvas.",
+          "transliteration": null,
+          "meaning": "Responder con paciencia y calma en lugar de devolver reacción sobre reacción.",
+          "pause_after_sec": 12,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que la generosidad abierta y la paciencia serena maduren en beneficio de todos los seres.",
+      "paramita_ref": {
+        "section": "Camino de las Paramitas",
+        "topic": "Generosidad y Paciencia",
+        "url_path": "/"
+      }
+    },
+    {
+      "id": "prac_dedicatoria_merito_y_sangha",
+      "type": "PRAYER",
+      "title": "Dedicación del Mérito y Vínculo con la Sangha",
+      "subtitle": "Sellar la práctica orientando el mérito hacia todos los seres",
+      "tradition": "Budismo Tibetano · Linaje Sakya (Paramita)",
+      "jewel_focus": ["BUDDHA", "DHARMA", "SANGHA"],
+      "tags": ["dedicatoria_merito", "merito", "sangha", "cierre"],
+      "estimated_minutes": 3,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 115,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "DEDICATION",
+          "heading": "Dedicación del mérito",
+          "text": "Por este mérito, que pueda alcanzar pronto el estado despierto y conducir a cada uno de los seres, sin excepción, a ese mismo estado.",
+          "transliteration": null,
+          "meaning": "Sellar la práctica con apertura altruista para que el bien cultivado no se agote en el ego.",
+          "pause_after_sec": 6,
+          "repeat_count": 2
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que por el mérito de la práctica, el estudio y el vínculo con la Sangha, todos los seres encuentren paz y liberación.",
+      "paramita_ref": {
+        "section": "Práctica y Comunidad",
+        "topic": "Dedicación del Mérito y Sangha",
+        "url_path": "/medita-con-nosotros/"
+      }
+    },
+    {
+      "id": "prac_pausa_impulso_compra",
+      "type": "IMPULSE_PAUSE",
+      "title": "Freno al Impulso de Comprar y Ruido Digital",
+      "subtitle": "Pausa breve ante el deseo de comprar o scrollear sin rumbo",
+      "tradition": "Aplicación Cotidiana · Paramita",
+      "jewel_focus": ["DHARMA"],
+      "tags": ["freno_compras", "bienestar_digital", "apego", "impermanencia"],
+      "estimated_minutes": 2,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 120,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "PAUSE",
+          "heading": "Detener el automatismo",
+          "text": "Detente un momento antes de tocar comprar o seguir deslizando. Nota dónde se siente la urgencia o la inquietud en el cuerpo.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 6,
+          "repeat_count": 1
+        },
+        {
+          "order": 2,
+          "phase": "CONTEMPLATION",
+          "heading": "Reconocer la necesidad real",
+          "text": "Este impulso busca alivio rápido, novedad o consuelo pasajero. Lo que adquieres por ansiedad no sostiene una calma real; vuelve a lo que ya es suficiente ahora.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 8,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que el dinero, el tiempo y la atención ahorrados hoy se orienten hacia lo esencial y el bien genuino.",
+      "paramita_ref": {
+        "section": "Camino Cotidiano",
+        "topic": "Generosidad, Contentamiento y No Apego",
+        "url_path": "/"
+      }
+    },
+    {
+      "id": "prac_calma_digital_noche",
+      "type": "GUIDED_MEDITATION",
+      "title": "Calma Digital y Soltar la Pantalla",
+      "subtitle": "Desconectar el scroll continuo y volver a la presencia serena",
+      "tradition": "Aplicación Cotidiana · Paramita",
+      "jewel_focus": ["DHARMA", "SANGHA"],
+      "tags": ["bienestar_digital", "calma_mental", "descanso", "atencion"],
+      "estimated_minutes": 4,
+      "audio_asset_uri": null,
+      "tts_enabled": true,
+      "default_pace_wpm": 112,
+      "segments": [
+        {
+          "order": 1,
+          "phase": "POSTURE_BREATH",
+          "heading": "Suavizar la mirada",
+          "text": "Baja la mirada del brillo de la pantalla, deja descansar los párpados y toma una exhalación larga y tranquila.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 8,
+          "repeat_count": 1
+        },
+        {
+          "order": 2,
+          "phase": "DEDICATION",
+          "heading": "Volver a lo esencial",
+          "text": "No necesitas consumir un estímulo más para estar bien. Deja el teléfono a un lado y dedica este momento de calma a todos los seres.",
+          "transliteration": null,
+          "meaning": null,
+          "pause_after_sec": 8,
+          "repeat_count": 1
+        }
+      ],
+      "mantra_config": null,
+      "merit_dedication": "Que la atención recuperada y la serenidad de este descanso beneficien a todos los seres.",
+      "paramita_ref": {
+        "section": "Camino Cotidiano",
+        "topic": "Atención Serena y Bienestar Digital",
+        "url_path": "/"
+      }
+    }
+  ]
+}
