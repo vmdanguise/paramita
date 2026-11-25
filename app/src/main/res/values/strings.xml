@@ -235,5 +235,6 @@
 
     <string name="about_independent">Mani es un proyecto independiente: no es una app oficial de Paramita ni habla en su nombre.</string>
     <string name="about_content_review">Los textos de las prácticas están en revisión editorial y pueden cambiar.</string>
-    <string name="about_privacy">Tus datos de práctica quedan en el teléfono. Mani no usa internet ni analíticas; solo tu copia de seguridad de Google, si la tenés activada, puede incluirlos.</string>
+    <string name="about_privacy">Tus datos de práctica, tus grabaciones y tus imágenes quedan en el teléfono. Mani no usa internet ni analíticas; solo tu copia de seguridad de Google, si la tenés activada, puede incluirlos.</string>
+    <string name="about_privacy_permissions">El micrófono se usa solo cuando tocás \"Grabar\" para guardar un mantra con tu voz. El servicio de accesibilidad se usa solo si lo activás, para saber qué app se abre y ofrecerte la pausa; no lee lo que escribís ni lo que se muestra.</string>
 </resources>

@@ -118,9 +118,9 @@
 
 - [ ] **T-901** Revisión editorial del catálogo con fuentes de Paramita (ver `docs/preguntas-abiertas.md`).
 - [ ] **T-902** Checklist ético completo (`spec-process-etica-contenido-faq.md` §10).
-- [ ] **T-903** Política de privacidad (Accessibility y datos locales) para Play Store.
+- [x] **T-903** Política de privacidad (Accessibility y datos locales) para Play Store: `docs/privacidad.html` en GitHub Pages (ADR-0011).
 - [ ] **T-904** R8/ProGuard: reglas para `kotlinx.serialization` y Room.
-- [ ] **T-905** Firma, `versionCode` y `versionName`, APK y AAB release.
+- [~] **T-905** Firma, `versionCode` y `versionName`, APK y AAB release. Clave de subida y AAB firmado listos (ADR-0011). Falta que Vicente cree la app en Play Console y suba el AAB a prueba cerrada (`docs/play-store/README.md`). Producción espera Q-01 y los 14 días con 12 testers.
 - [ ] **T-906** Pruebas en dispositivo real (Android 8, 13 y 14+).
 
 ## Backlog (sin fase asignada)

@@ -68,6 +68,11 @@ fun FaqScreen(onBack: () -> Unit, onOpenLink: (String) -> Unit) {
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            Text(
+                stringResource(R.string.about_privacy_permissions),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
             TextButton(onClick = { onOpenLink(ParamitaLinks.HOME) }) { Text(stringResource(R.string.link_home)) }
         }
     }

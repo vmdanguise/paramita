@@ -5,6 +5,16 @@ Los cambios de contenido del catálogo indican el `schema_version`.
 
 ## [Sin publicar]
 
+## [0.4.1] - 2026-11-24 · preparación para Google Play
+
+### Agregado
+- Política de privacidad pública en `docs/privacidad.html` (GitHub Pages) y guía de publicación en `docs/play-store/README.md`, con los textos de la ficha y las declaraciones de servicio en primer plano, accesibilidad y seguridad de los datos (ADR-0011).
+- Ícono de 512 px y gráfico destacado de 1024×500 para la ficha de Play, hechos con los mismos vectores propios.
+- Firma del release con una clave de subida propia, leída de `keystore.properties` (no se versiona). Sin ese archivo, el build sigue igual que antes.
+
+### Cambiado
+- Preguntas frecuentes: el texto de privacidad ahora menciona las grabaciones y las imágenes, y explica para qué se usan el micrófono y el servicio de accesibilidad.
+
 ## [0.4.0] - 2026-11-24 · prácticas propias y voz
 
 Todo lo anterior se mantiene: las 8 prácticas del catálogo, el susurro de inicio, el freno al impulso y los enlaces.
