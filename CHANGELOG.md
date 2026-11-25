@@ -5,6 +5,31 @@ Los cambios de contenido del catálogo indican el `schema_version`.
 
 ## [Sin publicar]
 
+## [0.4.0] - 2026-11-24 · prácticas propias y voz
+
+Todo lo anterior se mantiene: las 8 prácticas del catálogo, el susurro de inicio, el freno al impulso y los enlaces.
+
+### Agregado
+- **Mis prácticas** (ADR-0008): crear, editar y borrar oraciones y mantras propios.
+  - Campos: título, tipo, texto que Mani lee en voz alta, repeticiones o vueltas, pausa, campana cada N vueltas, velocidad y dedicación del mérito (con un texto por defecto).
+  - Borrar una práctica la archiva: su historial se conserva.
+- **Mantras grabados con tu voz** (ADR-0009): se graban dentro de la app o se elige un audio del teléfono. Suenan en lugar de la voz sintética, con las vueltas, pausas y velocidad elegidas. El permiso de micrófono se pide solo al tocar "Grabar".
+- **Imagen por práctica**, elegida de la galería con el selector de fotos (sin permisos). Se copia a la carpeta privada de la app.
+- **Voz de las prácticas:** voz en español instalada (solo voces sin internet), tono, volumen y ecualización de 3 bandas (graves, medios y agudos), con estilos Natural, Cálida, Clara, Suave y Profunda. Botón "Probar la voz". Los cambios valen desde la próxima frase, aunque haya una práctica sonando.
+- **Velocidad:** se guarda en cada práctica propia y se puede cambiar antes de empezar o mientras suena (0,5× a 1,6×). En las grabaciones cambia la velocidad sin cambiar el tono.
+- **Símbolos auspiciosos** (los 8 Ashtamangala, dibujados de cero, ADR-0010):
+  - uno por día en Inicio;
+  - rotando durante la práctica si no tiene imagen propia;
+  - en la dedicación del mérito;
+  - en la pausa de impulso, donde reemplazan al loto que respira.
+- **Meditación guiada:** tarjeta en Inicio que avisa que estamos trabajando en esto.
+- Se puede elegir que una práctica propia suene en susurro al abrir la app. Si se borra, vuelve el refugio.
+
+### Cambiado
+- Nuevo ícono propio, "la joya en el loto", sobre fondo teal profundo. Sigue sin el logo de Paramita (Q-01).
+- Base de datos v2: columna `practices.image_uri`, con migración automática que no borra nada.
+- Corregido: actualizar el catálogo ya no archiva las prácticas propias.
+
 ## [0.3.1] - 2026-11-24
 
 ### Cambiado

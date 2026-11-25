@@ -1,44 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Rueda de oración (mani) estilizada, diseño original. Todo dentro de la zona segura de 66 dp. -->
+<!-- La joya (mani) en el loto, diseño original. Piezas separadas para la variante monocroma; todo dentro de la zona segura de 66 dp. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- remate -->
     <path
-        android:fillColor="#FF00C7E5"
-        android:pathData="M54,26.5A3.5,3.5 0,1 1,54 33.5A3.5,3.5 0,1 1,54 26.5Z" />
-    <!-- tapa superior -->
+        android:pathData="M54,26C61,34 64,41 54,50C44,41 47,34 54,26Z"
+        android:fillColor="#FFFFC23D" />
     <path
-        android:fillColor="#FFFEF7E5"
-        android:pathData="M44,34L64,34A2,2 0,0 1,66 36L66,38L42,38L42,36A2,2 0,0 1,44 34Z" />
-    <!-- tambor -->
+        android:pathData="M54,32C57,36 58,40 54,44C51,40 51,36 54,32Z"
+        android:fillColor="#FFFFE7A8" />
     <path
-        android:fillColor="#FFFFAE00"
-        android:pathData="M40,38L68,38L68,62L40,62Z" />
-    <!-- franjas del tambor -->
+        android:pathData="M54,53C61,60 61,71 54,79C47,71 47,60 54,53Z"
+        android:fillColor="#FFF2FBFB" />
     <path
-        android:fillColor="#FFFEF7E5"
-        android:pathData="M40,44L68,44L68,46L40,46Z" />
+        android:pathData="M50.5,78C41,74 35,64 36,52C44,56 50,65 50.5,78Z"
+        android:fillColor="#FFCFE7E7" />
     <path
-        android:fillColor="#FFFEF7E5"
-        android:pathData="M40,54L68,54L68,56L40,56Z" />
-    <!-- tapa inferior -->
+        android:pathData="M57.5,78C67,74 73,64 72,52C64,56 58,65 57.5,78Z"
+        android:fillColor="#FFCFE7E7" />
     <path
-        android:fillColor="#FFFEF7E5"
-        android:pathData="M42,62L66,62L66,64A2,2 0,0 1,64 66L44,66A2,2 0,0 1,42 64Z" />
-    <!-- mango -->
+        android:pathData="M47.5,80C36,81 27,74 24,64C34,63 44,70 47.5,80Z"
+        android:fillColor="#FFA0C8C8" />
     <path
-        android:fillColor="#FFFEF7E5"
-        android:pathData="M52,66L56,66L56,82A2,2 0,0 1,52 82Z" />
-    <!-- cadena y contrapeso -->
+        android:pathData="M60.5,80C72,81 81,74 84,64C74,63 64,70 60.5,80Z"
+        android:fillColor="#FFA0C8C8" />
     <path
-        android:strokeColor="#FFFEF7E5"
-        android:strokeWidth="1.5"
-        android:strokeLineCap="round"
-        android:pathData="M68,50L76.5,57" />
-    <path
-        android:fillColor="#FF00C7E5"
-        android:pathData="M78.5,56A3,3 0,1 1,78.5 62A3,3 0,1 1,78.5 56Z" />
+        android:pathData="M33,85Q54,80 75,85Q54,89 33,85Z"
+        android:fillColor="#FFA0C8C8" />
 </vector>

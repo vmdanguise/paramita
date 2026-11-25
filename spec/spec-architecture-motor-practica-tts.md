@@ -1,7 +1,8 @@
 ---
 title: Motor de práctica (PracticeRunnerEngine), TTS y campana
-version: 1.0
+version: 1.1
 date_created: 2026-11-24
+last_updated: 2026-11-24 (v1.1: grabaciones propias, velocidad en vivo y ajustes de voz)
 owner: Vicente
 tags: [architecture, engine, tts, audio]
 ---
@@ -50,8 +51,11 @@ Paquete `engine`. Referencia en el chat: modelos y motor en las líneas ~424-803
 - **REQ-033:** `speakAndAwait` suspende hasta `onDone` u `onError` del `UtteranceProgressListener`. Es cancelable: cancelar corta el TTS. Si el TTS no está listo, espera la inicialización con un timeout de 5 s y, si no llega, continúa en silencio (no bloquea la práctica).
 - **REQ-034:** `WHISPER`: pitch 0.86 y volumen 0.5 (`KEY_PARAM_VOLUME`). El borrador solo cambiaba el pitch; el TTS de Android no susurra de verdad, así que el efecto es "voz baja".
 - **REQ-035:** Campana: `SoundPool` con `R.raw.bell_soft` (cargado al iniciar). Si falta el recurso o falla la carga, se usa `ToneGenerator` (`TONE_PROP_BEEP`, volumen bajo, 150 ms). Campana de hito: volumen 0.6; de cierre: 0.8.
-- **REQ-036:** Si `audioAssetUri` no es null y el archivo existe, *(fase futura, B-02)* se reproduce el audio en lugar del TTS. Si no existe, se usa TTS sin error.
+- ~~**REQ-036 (v1.0):** *(fase futura, B-02)*.~~ Motivo: implementado en v0.4.0 para las grabaciones propias (ADR-0009).
+- **REQ-036:** Si `audioAssetUri` es una ruta local (`/…`) que existe, el segmento CORE principal se reproduce con esa grabación (`MediaPlayer`, velocidad con `PlaybackParams` y sin cambiar el tono) en lugar del TTS. Si falta o falla, se usa TTS sin error. Los `asset:///` del catálogo se ignoran hasta tener audios licenciados (Q-04).
 - **REQ-037:** `release()` libera el TTS y el SoundPool. La llama el servicio en `onDestroy`.
+- **REQ-038 (NUEVO v1.1):** `PracticeRunnerEngine.setPace(wpm)` cambia la velocidad durante la práctica (desde la próxima frase) y la expone en `RunnerSnapshot.paceWpm`. El servicio la recibe con `ACTION_SET_PACE`. El rango de `setPaceFromWpm` es de 0,5× a 1,6× (antes 0,72× a 1,25×).
+- **REQ-039 (NUEVO v1.1):** Ajustes de voz globales (`VoiceSettings` en `ManiSettings`): voz TTS sin red, tono, volumen y ecualización de 3 bandas con biquads (graves 220 Hz en estante, medios 1,5 kHz en campana, agudos 4,5 kHz en estante, ±12 dB, con limitador). Con la EQ activa, la frase se sintetiza a archivo y se procesa como el susurro.
 
 ### Restricciones
 - **CON-001:** Los chequeos de cancelación usan `coroutineContext.ensureActive()` / `currentCoroutineContext().isActive`, **no** `scope.isActive` (bug del borrador: `scope` sigue activo aunque el job se cancele).

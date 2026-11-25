@@ -16,8 +16,11 @@ import ar.param.advisor.data.local.dao.PracticeSessionDao
 import ar.param.advisor.data.local.entity.PracticeTypes
 import ar.param.advisor.data.local.entity.PracticeWithDetails
 import ar.param.advisor.data.settings.ManiSettings
+import ar.param.advisor.data.user.UserMediaStore
+import ar.param.advisor.data.user.UserPracticeForm
 import ar.param.advisor.engine.PracticeRunSpec
 import ar.param.advisor.engine.RunnerSnapshot
+import ar.param.advisor.engine.VoiceSettings
 import ar.param.advisor.engine.toPracticeRunSpec
 import ar.param.advisor.service.PracticePlaybackService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -37,10 +40,12 @@ data class RefugeHomeUiState(
     val isLoading: Boolean = true,
     val featuredPractice: PracticeWithDetails? = null,
     val practices: List<PracticeWithDetails> = emptyList(),
+    val myPractices: List<PracticeWithDetails> = emptyList(),
     val impulsePractice: PracticeWithDetails? = null,
     val activeRunnerSnapshot: RunnerSnapshot = RunnerSnapshot(),
     val practiceMomentsThisWeek: Int = 0,
     val startWithRefuge: Boolean = true,
+    val startupPracticeTitle: String? = null,
 )
 
 class ManiViewModel(
@@ -48,6 +53,7 @@ class ManiViewModel(
     private val sessionDao: PracticeSessionDao,
     private val targetDao: MindfulAppTargetDao,
     private val settings: ManiSettings,
+    private val media: UserMediaStore,
     private val today: () -> LocalDate = { LocalDate.now() },
 ) : ViewModel() {
 
@@ -61,18 +67,77 @@ class ManiViewModel(
         PracticePlaybackService.sessionState,
         weekMoments,
         settings.startWithRefuge,
-    ) { all, snapshot, moments, startWithRefuge ->
+        settings.startupPracticeId,
+    ) { all, snapshot, moments, startWithRefuge, startupId ->
         val runnable = all.filter { it.practice.type != PracticeTypes.IMPULSE_PAUSE }
+        val (mine, catalog) = runnable.partition { it.practice.isUserCreated }
         RefugeHomeUiState(
             isLoading = all.isEmpty(),
-            featuredPractice = featuredFor(runnable),
-            practices = runnable.sortedWith(compareByDescending<PracticeWithDetails> { it.practice.isFavorite }),
+            featuredPractice = featuredFor(catalog),
+            practices = catalog.sortedWith(compareByDescending<PracticeWithDetails> { it.practice.isFavorite }),
+            myPractices = mine.sortedWith(compareByDescending<PracticeWithDetails> { it.practice.isFavorite }),
             impulsePractice = all.firstOrNull { it.practice.type == PracticeTypes.IMPULSE_PAUSE },
             activeRunnerSnapshot = snapshot,
             practiceMomentsThisWeek = moments,
             startWithRefuge = startWithRefuge,
+            startupPracticeTitle = all.firstOrNull { it.practice.id == startupId }?.practice?.title,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), RefugeHomeUiState())
+
+    val startupPracticeId: StateFlow<String> = settings.startupPracticeId
+
+    fun setStartupPractice(practiceId: String?) = settings.setStartupPracticeId(practiceId)
+
+    val voiceSettings: StateFlow<VoiceSettings> = settings.voice
+
+    fun setVoiceSettings(voice: VoiceSettings) = settings.setVoice(voice)
+
+    /** Carga una práctica propia para editarla, o un formulario vacío si es nueva. */
+    suspend fun loadForm(practiceId: String?, defaultDedication: String): UserPracticeForm? {
+        if (practiceId == null) return UserPracticeForm()
+        val details = practiceDao.getPracticeByIdOnce(practiceId) ?: return null
+        if (!details.practice.isUserCreated) return null
+        return UserPracticeForm.from(details, defaultDedication)
+    }
+
+    /** Guarda la práctica y borra la imagen o grabación anterior si se reemplazó. */
+    fun saveUserPractice(
+        form: UserPracticeForm,
+        defaultDedication: String,
+        tradition: String,
+        previous: UserPracticeForm?,
+        playOnLaunch: Boolean,
+        onSaved: (String) -> Unit,
+    ) {
+        viewModelScope.launch {
+            val bundle = form.toEntities(defaultDedication, tradition)
+            practiceDao.saveUserPractice(bundle.practice, bundle.segments, bundle.mantraConfig)
+            if (previous != null) {
+                if (previous.imagePath != form.imagePath) media.deleteOwned(previous.imagePath)
+                if (previous.recordingPath != form.recordingPath) media.deleteOwned(previous.recordingPath)
+            }
+            if (playOnLaunch) {
+                settings.setStartupPracticeId(form.id)
+            } else if (settings.startupPracticeId.value == form.id) {
+                settings.setStartupPracticeId(null)
+            }
+            onSaved(form.id)
+        }
+    }
+
+    /** Se archiva (ADR-0003): el historial de esa práctica sigue existiendo. */
+    fun deleteUserPractice(form: UserPracticeForm, onDone: () -> Unit) {
+        viewModelScope.launch {
+            practiceDao.archiveUserPractice(form.id)
+            media.deleteOwned(form.imagePath)
+            media.deleteOwned(form.recordingPath)
+            if (settings.startupPracticeId.value == form.id) settings.setStartupPracticeId(null)
+            onDone()
+        }
+    }
+
+    /** Archivos elegidos o grabados que quedaron sin usar porque se canceló la edición. */
+    fun discardMedia(vararg paths: String?) = paths.forEach(media::deleteOwned)
 
     /** Rotación determinista por fecha (REQ-031, propuesta de Q-06). */
     private fun featuredFor(practices: List<PracticeWithDetails>): PracticeWithDetails? {
@@ -117,7 +182,7 @@ class ManiViewModel(
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as ManiApplication
-                ManiViewModel(app.practiceDao, app.practiceSessionDao, app.mindfulAppTargetDao, app.settings)
+                ManiViewModel(app.practiceDao, app.practiceSessionDao, app.mindfulAppTargetDao, app.settings, app.userMedia)
             }
         }
     }

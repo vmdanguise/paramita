@@ -15,6 +15,8 @@ import ar.param.advisor.ui.ManiViewModel
 import ar.param.advisor.ui.about.FaqScreen
 import ar.param.advisor.ui.home.RefugeHomeScreen
 import ar.param.advisor.ui.practice.PracticeRunnerScreen
+import ar.param.advisor.ui.practices.PracticeEditorScreen
+import ar.param.advisor.ui.voice.VoiceSettingsScreen
 import ar.param.advisor.ui.wellbeing.ImpulsePauseActivity
 import ar.param.advisor.ui.wellbeing.MindfulAppTargetsScreen
 
@@ -25,7 +27,11 @@ object ManiRoutes {
     const val MINDFUL_TARGETS = "mindful_targets"
     const val THREE_JEWELS = "three_jewels?jewel={jewel}"
     const val FAQ = "faq"
+    const val PRACTICE_EDIT = "practice_edit?practiceId={practiceId}"
+    const val VOICE = "voice"
     fun practiceRoute(practiceId: String) = "practice/$practiceId"
+    fun practiceEditRoute(practiceId: String? = null) =
+        if (practiceId == null) "practice_edit" else "practice_edit?practiceId=$practiceId"
 }
 
 /** Pedido único de navegación hecho desde fuera de la UI (arranque o notificación). */
@@ -61,6 +67,39 @@ fun ManiNavGraph(
                 onOpenMindfulTargets = { navController.navigate(ManiRoutes.MINDFUL_TARGETS) },
                 onStartWithRefugeChange = viewModel::setStartWithRefuge,
                 onOpenLink = { openAllowedLink(context, it) },
+                onNewPractice = { navController.navigate(ManiRoutes.practiceEditRoute()) },
+                onOpenVoice = { navController.navigate(ManiRoutes.VOICE) },
+            )
+        }
+        composable(
+            route = ManiRoutes.PRACTICE_EDIT,
+            arguments = listOf(
+                navArgument("practiceId") {
+                    type = NavType.StringType
+                    nullable = true
+                    defaultValue = null
+                },
+            ),
+        ) { entry ->
+            val practiceId = entry.arguments?.getString("practiceId")
+            PracticeEditorScreen(
+                practiceId = practiceId,
+                viewModel = viewModel,
+                onDone = { savedId ->
+                    navController.popBackStack()
+                    // Una práctica nueva se abre recién guardada, lista para escucharla.
+                    if (practiceId == null && savedId != null) {
+                        navController.navigate(ManiRoutes.practiceRoute(savedId))
+                    }
+                },
+            )
+        }
+        composable(ManiRoutes.VOICE) {
+            val voice by viewModel.voiceSettings.collectAsStateWithLifecycle()
+            VoiceSettingsScreen(
+                settings = voice,
+                onChange = viewModel::setVoiceSettings,
+                onBack = { navController.popBackStack() },
             )
         }
         composable(
@@ -76,6 +115,7 @@ fun ManiNavGraph(
                         navController.navigate(ManiRoutes.HOME)
                     }
                 },
+                onEdit = { navController.navigate(ManiRoutes.practiceEditRoute(practiceId)) },
             )
         }
         composable(ManiRoutes.MINDFUL_TARGETS) {

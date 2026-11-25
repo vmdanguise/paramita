@@ -5,6 +5,7 @@ import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.media.MediaPlayer
 import android.media.ToneGenerator
 import android.os.Bundle
 import android.os.Handler
@@ -25,27 +26,43 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.resume
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.sin
 
+/** Una voz instalada en el teléfono que funciona sin internet. */
+data class VoiceOption(val name: String, val locale: Locale)
+
 /**
- * Voz (TTS del sistema) y campana (spec del motor, REQ-030..REQ-037).
+ * Voz (TTS del sistema), grabaciones propias y campana (spec del motor, REQ-030..REQ-037).
  * La campana se sintetiza en código: no depende de ningún audio de terceros (Q-04).
  */
-class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnInitListener {
+class SpeechAndBellController(
+    context: Context,
+    initialVoice: VoiceSettings = VoiceSettings(),
+) : SpeechPort, TextToSpeech.OnInitListener {
 
     private val appContext = context.applicationContext
     private val mainHandler = Handler(Looper.getMainLooper())
     private val ready = CompletableDeferred<Boolean>()
     private val pending = ConcurrentHashMap<String, CancellableContinuation<Unit>>()
     private val bell = BellSynth()
-    private val whisperCache = object : LinkedHashMap<String, PcmClip>(16, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, PcmClip>?) = size > WHISPER_CACHE_SIZE
+    private val clipCache = object : LinkedHashMap<String, PcmClip>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, PcmClip>?) = size > CLIP_CACHE_SIZE
     }
 
     @Volatile private var speechRate = 1f
     @Volatile private var paceWpm = 120
-    @Volatile private var whisperTrack: AudioTrack? = null
+    @Volatile private var clipTrack: AudioTrack? = null
+    @Volatile private var recordingPlayer: MediaPlayer? = null
+    @Volatile private var defaultLocale: Locale = Locale.getDefault()
+    @Volatile private var appliedVoiceName: String? = null
+
+    /** Ajustes de voz vigentes; se pueden cambiar en cualquier momento (valen desde la próxima frase). */
+    @Volatile var voice: VoiceSettings = initialVoice.normalized()
+        set(value) {
+            field = value.normalized()
+        }
 
     // Se asigna después de construirse; onInit no lo toca directamente (CON-003).
     @Volatile private var tts: TextToSpeech? = null
@@ -72,13 +89,9 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
         val locale = candidates.firstOrNull {
             runCatching { engine.isLanguageAvailable(it) >= TextToSpeech.LANG_AVAILABLE }.getOrDefault(false)
         } ?: Locale.getDefault()
+        defaultLocale = locale
         engine.setLanguage(locale)
-        engine.setAudioAttributes(
-            AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                .build(),
-        )
+        engine.setAudioAttributes(speechAttributes())
         engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             override fun onStart(utteranceId: String?) = Unit
             override fun onDone(utteranceId: String?) = finish(utteranceId)
@@ -89,17 +102,54 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
         })
     }
 
+    private fun speechAttributes() = AudioAttributes.Builder()
+        .setUsage(AudioAttributes.USAGE_MEDIA)
+        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+        .build()
+
     private fun finish(utteranceId: String?) {
         utteranceId?.let { pending.remove(it)?.resume(Unit) }
     }
 
-    override fun setPaceFromWpm(wpm: Int) {
-        paceWpm = wpm.coerceAtLeast(40)
-        speechRate = (wpm / 120f).coerceIn(0.72f, 1.25f)
+    /**
+     * Voces en español instaladas en el teléfono. Se excluyen las que necesitan internet:
+     * nada de lo que se recita sale del dispositivo.
+     */
+    suspend fun availableVoices(): List<VoiceOption> {
+        val available = withTimeoutOrNull(TTS_INIT_TIMEOUT_MS) { ready.await() } ?: false
+        val engine = tts ?: return emptyList()
+        if (!available) return emptyList()
+        return runCatching {
+            engine.voices.orEmpty()
+                .filter { it.locale.language == "es" && !it.isNetworkConnectionRequired }
+                .sortedWith(compareBy({ it.locale.country != defaultLocale.country }, { it.locale.toLanguageTag() }, { it.name }))
+                .map { VoiceOption(it.name, it.locale) }
+        }.getOrDefault(emptyList())
     }
 
-    override suspend fun speakAndAwait(text: String, mode: RecitationMode) {
-        if (text.isBlank() || mode == RecitationMode.MENTAL) return
+    /** Aplica la voz elegida, o vuelve a la voz por defecto en español. */
+    private fun applyVoice(engine: TextToSpeech) {
+        val wanted = voice.voiceName
+        if (wanted == appliedVoiceName) return
+        runCatching {
+            val match = wanted?.let { name -> engine.voices.orEmpty().firstOrNull { it.name == name } }
+            if (match != null) engine.voice = match else engine.setLanguage(defaultLocale)
+        }.onFailure { Log.w(TAG, "No se pudo cambiar la voz", it) }
+        appliedVoiceName = wanted
+    }
+
+    /** 120 palabras por minuto es la velocidad normal; el control va de la mitad a 1,6 veces. */
+    override fun setPaceFromWpm(wpm: Int) {
+        paceWpm = wpm.coerceAtLeast(40)
+        speechRate = (wpm / 120f).coerceIn(MIN_RATE, MAX_RATE)
+    }
+
+    override suspend fun speakAndAwait(text: String, mode: RecitationMode, audioPath: String?) {
+        if (mode == RecitationMode.MENTAL) return
+        val whisper = mode == RecitationMode.WHISPER
+        val recording = audioPath?.let(::File)?.takeIf { it.isFile && it.length() > 0 }
+        if (recording != null && playRecording(recording, whisper)) return
+        if (text.isBlank()) return
         val available = withTimeoutOrNull(TTS_INIT_TIMEOUT_MS) { ready.await() } ?: false
         val engine = tts
         if (!available || engine == null) {
@@ -107,18 +157,19 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
             delay(estimatedReadingMs(text))
             return
         }
-        if (mode == RecitationMode.WHISPER) {
-            val clip = whisperClip(engine, text)
+        applyVoice(engine)
+        val v = voice
+        if (whisper || !v.isFlatEq) {
+            val clip = processedClip(engine, text, whisper, v)
             if (clip != null) {
-                playClip(clip)
+                playClip(clip, v.volume)
                 return
             }
         }
-        val whisper = mode == RecitationMode.WHISPER
         engine.setSpeechRate(speechRate)
-        engine.setPitch(if (whisper) 0.86f else 1f)
+        engine.setPitch(v.pitch * if (whisper) 0.86f else 1f)
         val params = Bundle().apply {
-            putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, if (whisper) 0.5f else 1f)
+            putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, v.volume * if (whisper) 0.5f else 1f)
         }
         val id = UUID.randomUUID().toString()
         suspendCancellableCoroutine { cont ->
@@ -134,20 +185,58 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
     }
 
     /**
-     * Susurro real: el TTS genera la frase en un archivo, se le quita la voz sonora
-     * ([Whisperizer]) y se guarda en memoria, porque los mantras se repiten muchas veces.
-     * Si algo falla devuelve null y se usa la voz normal a volumen bajo.
+     * Grabación propia (mantra grabado por el usuario). La velocidad se aplica sin cambiar
+     * el tono. Devuelve false si no se pudo reproducir, y entonces se usa la voz sintética.
      */
-    private suspend fun whisperClip(engine: TextToSpeech, text: String): PcmClip? {
-        val rate = speechRate * WHISPER_RATE_FACTOR
-        val key = "$rate|$text"
-        synchronized(whisperCache) { whisperCache[key] }?.let { return it }
-        val file = File(appContext.cacheDir, "susurro_${UUID.randomUUID()}.wav")
+    private suspend fun playRecording(file: File, whisper: Boolean): Boolean {
+        val player = MediaPlayer()
+        return try {
+            player.setAudioAttributes(speechAttributes())
+            withContext(Dispatchers.IO) {
+                player.setDataSource(file.absolutePath)
+                player.prepare()
+            }
+            val volume = voice.volume * if (whisper) 0.5f else 1f
+            player.setVolume(volume, volume)
+            recordingPlayer = player
+            suspendCancellableCoroutine { cont ->
+                player.setOnCompletionListener { if (cont.isActive) cont.resume(Unit) }
+                player.setOnErrorListener { _, _, _ ->
+                    if (cont.isActive) cont.resume(Unit)
+                    true
+                }
+                cont.invokeOnCancellation { runCatching { player.stop() } }
+                if (abs(speechRate - 1f) > 0.01f) {
+                    runCatching { player.playbackParams = player.playbackParams.setSpeed(speechRate) }
+                }
+                if (!player.isPlaying) player.start()
+            }
+            true
+        } catch (e: Exception) {
+            if (e is kotlinx.coroutines.CancellationException) throw e
+            Log.w(TAG, "No se pudo reproducir la grabación; se usa la voz sintética", e)
+            false
+        } finally {
+            recordingPlayer = null
+            runCatching { player.release() }
+        }
+    }
+
+    /**
+     * El TTS genera la frase en un archivo; si es susurro se le quita la voz sonora ([Whisperizer])
+     * y después se ecualiza ([VoiceEqualizer]). Se guarda en memoria porque los mantras se repiten.
+     * Si algo falla devuelve null y se usa la voz directa del motor.
+     */
+    private suspend fun processedClip(engine: TextToSpeech, text: String, whisper: Boolean, v: VoiceSettings): PcmClip? {
+        val rate = if (whisper) speechRate * WHISPER_RATE_FACTOR else speechRate
+        val key = "$whisper|$rate|${v.cacheKey}|$text"
+        synchronized(clipCache) { clipCache[key] }?.let { return it }
+        val file = File(appContext.cacheDir, "voz_${UUID.randomUUID()}.wav")
         return try {
             engine.setSpeechRate(rate)
-            engine.setPitch(1f)
+            engine.setPitch(v.pitch)
             val id = UUID.randomUUID().toString()
-            val ok = withTimeoutOrNull(WHISPER_SYNTH_TIMEOUT_MS) {
+            val ok = withTimeoutOrNull(SYNTH_TIMEOUT_MS) {
                 suspendCancellableCoroutine { cont ->
                     pending[id] = cont
                     cont.invokeOnCancellation { pending.remove(id) }
@@ -161,28 +250,27 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
             val clip = withContext(Dispatchers.Default) {
                 WavPcm.parse(file.readBytes())
                     ?.takeIf { it.samples.isNotEmpty() }
-                    ?.let { PcmClip(Whisperizer.process(it.samples, it.sampleRate), it.sampleRate) }
+                    ?.let { raw ->
+                        val base = if (whisper) Whisperizer.process(raw.samples, raw.sampleRate) else raw.samples
+                        val eq = if (v.isFlatEq) base else VoiceEqualizer.process(base, raw.sampleRate, v.bassDb, v.midDb, v.trebleDb)
+                        PcmClip(eq, raw.sampleRate)
+                    }
             } ?: return null
-            synchronized(whisperCache) { whisperCache[key] = clip }
+            synchronized(clipCache) { clipCache[key] = clip }
             clip
         } catch (e: Exception) {
             if (e is kotlinx.coroutines.CancellationException) throw e
-            Log.w(TAG, "No se pudo preparar el susurro; se usa la voz suave", e)
+            Log.w(TAG, "No se pudo preparar la voz procesada; se usa la voz directa", e)
             null
         } finally {
             file.delete()
         }
     }
 
-    private suspend fun playClip(clip: PcmClip) {
+    private suspend fun playClip(clip: PcmClip, volume: Float) {
         val track = try {
             AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                        .build(),
-                )
+                .setAudioAttributes(speechAttributes())
                 .setAudioFormat(
                     AudioFormat.Builder()
                         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
@@ -194,17 +282,18 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
                 .setTransferMode(AudioTrack.MODE_STATIC)
                 .build()
         } catch (e: Exception) {
-            Log.w(TAG, "No se pudo reproducir el susurro", e)
+            Log.w(TAG, "No se pudo reproducir la voz procesada", e)
             delay(clip.samples.size * 1000L / clip.sampleRate)
             return
         }
         try {
             track.write(clip.samples, 0, clip.samples.size)
-            whisperTrack = track
+            track.setVolume(volume)
+            clipTrack = track
             track.play()
             delay(clip.samples.size * 1000L / clip.sampleRate + 60L)
         } finally {
-            whisperTrack = null
+            clipTrack = null
             runCatching {
                 track.stop()
                 track.release()
@@ -223,7 +312,8 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
 
     override fun stopSpeaking() {
         runCatching { tts?.stop() }
-        runCatching { whisperTrack?.pause() }
+        runCatching { clipTrack?.pause() }
+        runCatching { recordingPlayer?.pause() }
     }
 
     override fun release() {
@@ -240,9 +330,11 @@ class SpeechAndBellController(context: Context) : SpeechPort, TextToSpeech.OnIni
     private companion object {
         const val TAG = "SpeechAndBell"
         const val TTS_INIT_TIMEOUT_MS = 5_000L
-        const val WHISPER_SYNTH_TIMEOUT_MS = 15_000L
+        const val SYNTH_TIMEOUT_MS = 15_000L
         const val WHISPER_RATE_FACTOR = 0.9f
-        const val WHISPER_CACHE_SIZE = 24
+        const val CLIP_CACHE_SIZE = 24
+        const val MIN_RATE = 0.5f
+        const val MAX_RATE = 1.6f
     }
 }
 

@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 
 interface SpeechPort {
     fun setPaceFromWpm(wpm: Int)
-    suspend fun speakAndAwait(text: String, mode: RecitationMode)
+    /** Si [audioPath] apunta a una grabación propia que existe, suena esa grabación en lugar del TTS. */
+    suspend fun speakAndAwait(text: String, mode: RecitationMode, audioPath: String? = null)
     fun ringBell(isCycleMilestone: Boolean)
     fun stopSpeaking()
     fun release()
@@ -56,6 +57,7 @@ class PracticeRunnerEngine(
                 currentSegment = spec.segments.firstOrNull(),
                 mantraTargetRepetitions = spec.mantraConfig?.targetRepetitions?.coerceAtLeast(1) ?: 0,
                 recitationMode = initialMode,
+                paceWpm = spec.defaultPaceWpm,
                 meritDedication = spec.meritDedication,
                 sessionStartedAtEpochMs = clock(),
             )
@@ -90,6 +92,12 @@ class PracticeRunnerEngine(
             scope.launch { onSessionFinished(current, last, false) }
         }
         _snapshot.update { it.copy(status = RunnerStatus.IDLE, pauseRemainingSec = 0) }
+    }
+
+    /** Cambia la velocidad mientras suena: vale desde la próxima frase. */
+    fun setPace(wpm: Int) {
+        speech.setPaceFromWpm(wpm)
+        _snapshot.update { it.copy(paceWpm = wpm) }
     }
 
     fun setRecitationMode(mode: RecitationMode) {
@@ -153,7 +161,7 @@ class PracticeRunnerEngine(
                         pauseRemainingSec = 0,
                     )
                 }
-                utter(segment.text)
+                utter(segment.text, segment.audioPath)
                 countdown(segment.pauseAfterSec)
             }
         }
@@ -176,7 +184,7 @@ class PracticeRunnerEngine(
         val text = segment.transliteration?.takeIf { it.isNotBlank() } ?: segment.text
         for (rep in (_snapshot.value.mantraRepetition + 1)..target) {
             currentCoroutineContext().ensureActive()
-            utter(text)
+            utter(text, segment.audioPath)
             _snapshot.update { it.copy(mantraRepetition = rep) }
             if (config.bellEveryN > 0 && rep % config.bellEveryN == 0 && rep < target) {
                 speech.ringBell(isCycleMilestone = true)
@@ -185,12 +193,12 @@ class PracticeRunnerEngine(
         }
     }
 
-    private suspend fun utter(text: String) {
+    private suspend fun utter(text: String, audioPath: String? = null) {
         val mode = _snapshot.value.recitationMode
         if (mode == RecitationMode.MENTAL) {
             delay(mentalRepDurationMs)
         } else {
-            speech.speakAndAwait(text, mode)
+            speech.speakAndAwait(text, mode, audioPath)
         }
         currentCoroutineContext().ensureActive()
     }

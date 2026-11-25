@@ -1,6 +1,7 @@
 package ar.param.advisor.data.local
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -28,8 +29,10 @@ import ar.param.advisor.data.local.entity.PracticeTagEntity
         MeritAndCalmEventEntity::class,
         MindfulAppTargetEntity::class,
     ],
-    version = 1,
+    version = 2,
     exportSchema = true,
+    // v2 suma `practices.image_uri` (nullable): migración automática, sin perder el historial.
+    autoMigrations = [AutoMigration(from = 1, to = 2)],
 )
 abstract class ManiDatabase : RoomDatabase() {
     abstract fun practiceDao(): PracticeDao

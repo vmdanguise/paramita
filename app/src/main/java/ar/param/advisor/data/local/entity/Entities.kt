@@ -26,7 +26,15 @@ data class PracticeEntity(
     @ColumnInfo(name = "is_favorite", defaultValue = "0") val isFavorite: Boolean = false,
     @ColumnInfo(name = "is_archived", defaultValue = "0") val isArchived: Boolean = false,
     @ColumnInfo(name = "updated_at_epoch_ms") val updatedAtEpochMs: Long,
-)
+    /** Ruta local de la imagen elegida de la galería (solo prácticas propias, DB v2). */
+    @ColumnInfo(name = "image_uri") val imageUri: String? = null,
+) {
+    val isUserCreated: Boolean get() = id.startsWith(USER_PRACTICE_PREFIX)
+
+    companion object {
+        const val USER_PRACTICE_PREFIX = "user_"
+    }
+}
 
 @Entity(
     tableName = "practice_segments",

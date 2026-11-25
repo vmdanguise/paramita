@@ -77,16 +77,21 @@ class MainActivity : ComponentActivity() {
         }
         lifecycleScope.launch {
             app.catalogSeed.await()
-            if (app.practiceDao.getPracticeByIdOnce(ManiSettings.REFUGE_PRACTICE_ID) == null) return@launch
+            // La práctica elegida para el inicio (puede ser una propia); si se archivó, el refugio.
+            val chosen = app.settings.startupPracticeId.value
+            val practiceId = listOf(chosen, ManiSettings.REFUGE_PRACTICE_ID)
+                .distinct()
+                .firstOrNull { app.practiceDao.getPracticeByIdOnce(it) != null }
+                ?: return@launch
             // Con la Activity visible: Android no permite iniciar un servicio en primer plano desde segundo plano.
             withResumed {
                 if (PracticePlaybackService.sessionState.value.isActive) return@withResumed
                 PracticePlaybackService.startPractice(
                     this@MainActivity,
-                    ManiSettings.REFUGE_PRACTICE_ID,
+                    practiceId,
                     PlaybackOverrides(mode = RecitationMode.WHISPER),
                 )
-                navRequest = NavRequest(ManiSettings.REFUGE_PRACTICE_ID)
+                navRequest = NavRequest(practiceId)
             }
         }
     }

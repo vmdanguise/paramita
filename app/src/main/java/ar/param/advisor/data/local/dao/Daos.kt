@@ -88,8 +88,33 @@ abstract class PracticeDao {
     @Upsert
     abstract suspend fun upsertPractices(practices: List<PracticeEntity>)
 
-    @Query("UPDATE practices SET is_archived = 1 WHERE id NOT IN (:keepIds)")
+    /** Solo toca prácticas del catálogo: las creadas por el usuario (`user_…`) nunca se archivan solas. */
+    @Query("UPDATE practices SET is_archived = 1 WHERE id NOT IN (:keepIds) AND id NOT LIKE 'user\\_%' ESCAPE '\\'")
     abstract suspend fun archiveAllExcept(keepIds: List<String>)
+
+    /** Alta o edición de una práctica propia: reemplaza su segmento y su configuración de mantra. */
+    @Transaction
+    open suspend fun saveUserPractice(
+        practice: PracticeEntity,
+        segments: List<PracticeSegmentEntity>,
+        mantraConfig: MantraConfigEntity?,
+    ) {
+        val ids = listOf(practice.id)
+        // Editar no le quita la estrella a una práctica favorita.
+        val favorite = isFavorite(practice.id) ?: practice.isFavorite
+        upsertPractices(listOf(practice.copy(isFavorite = favorite)))
+        deleteSegmentsFor(ids)
+        insertSegments(segments)
+        deleteMantraConfigsFor(ids)
+        mantraConfig?.let { insertMantraConfigs(listOf(it)) }
+    }
+
+    @Query("SELECT is_favorite FROM practices WHERE id = :practiceId")
+    abstract suspend fun isFavorite(practiceId: String): Boolean?
+
+    /** "Borrar" una práctica propia es archivarla (ADR-0003): su historial sigue existiendo. */
+    @Query("UPDATE practices SET is_archived = 1, updated_at_epoch_ms = :now WHERE id = :practiceId AND id LIKE 'user\\_%' ESCAPE '\\'")
+    abstract suspend fun archiveUserPractice(practiceId: String, now: Long = System.currentTimeMillis())
 
     @Query("DELETE FROM practice_segments WHERE practice_id IN (:ids)")
     abstract suspend fun deleteSegmentsFor(ids: List<String>)

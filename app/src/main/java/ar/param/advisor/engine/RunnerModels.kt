@@ -1,9 +1,9 @@
 package ar.param.advisor.engine
 
-import ar.param.advisor.data.catalog.CatalogMapper
 import ar.param.advisor.data.local.entity.PracticeWithDetails
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 
 enum class RunnerStatus { IDLE, PLAYING, PAUSED, COMPLETED }
 
@@ -25,6 +25,8 @@ data class PracticeSegmentModel(
     val meaning: String? = null,
     val pauseAfterSec: Int = 3,
     val repeatCount: Int = 1,
+    /** Grabación propia que reemplaza a la voz sintética en este segmento (REQ-036, B-02). */
+    val audioPath: String? = null,
 )
 
 data class MantraRunConfig(
@@ -43,6 +45,7 @@ data class PracticeRunSpec(
     val segments: List<PracticeSegmentModel>,
     val mantraConfig: MantraRunConfig? = null,
     val practiceType: String = "PRAYER",
+    val imagePath: String? = null,
 )
 
 data class RunnerSnapshot(
@@ -59,6 +62,7 @@ data class RunnerSnapshot(
     val mantraTargetRepetitions: Int = 0,
     val recitationMode: RecitationMode = RecitationMode.SPOKEN,
     val pauseRemainingSec: Int = 0,
+    val paceWpm: Int = 120,
     val meritDedication: String = "",
     val sessionStartedAtEpochMs: Long = 0L,
 ) {
@@ -90,36 +94,52 @@ data class PlaybackOverrides(
 }
 
 private val DEFAULT_PRESETS = listOf(3, 7, 21, 108)
+private val presetJson = Json { ignoreUnknownKeys = true }
+
+/** Solo rutas de archivos propios; los `asset:///` del catálogo todavía no tienen audio (B-02). */
+private fun localAudioPath(uri: String?): String? = uri?.takeIf { it.startsWith("/") }
 
 fun parsePresetCounts(json: String): List<Int> = runCatching {
-    CatalogMapper.json.decodeFromString(ListSerializer(Int.serializer()), json).filter { it > 0 }
+    presetJson.decodeFromString(ListSerializer(Int.serializer()), json).filter { it > 0 }
 }.getOrNull()?.takeIf { it.isNotEmpty() } ?: DEFAULT_PRESETS
 
-fun PracticeWithDetails.toPracticeRunSpec(): PracticeRunSpec = PracticeRunSpec(
-    practiceId = practice.id,
-    title = practice.title,
-    defaultPaceWpm = practice.defaultPaceWpm,
-    meritDedication = practice.meritDedication,
-    segments = orderedSegments.map {
-        PracticeSegmentModel(
-            id = it.id,
-            order = it.segmentOrder,
-            phase = it.phase,
-            heading = it.heading,
-            text = it.text,
-            transliteration = it.transliteration,
-            meaning = it.meaning,
-            pauseAfterSec = it.pauseAfterSec,
-            repeatCount = it.repeatCount,
-        )
-    },
-    mantraConfig = mantraConfig?.let {
-        MantraRunConfig(
-            targetRepetitions = it.targetRepetitions,
-            bellEveryN = it.bellEveryN,
-            pauseBetweenRepsMs = it.pauseBetweenRepsMs,
-            presetCounts = parsePresetCounts(it.presetCountsJson),
-        )
-    },
-    practiceType = practice.type,
-)
+fun PracticeWithDetails.toPracticeRunSpec(): PracticeRunSpec {
+    val ordered = orderedSegments
+    val recording = localAudioPath(practice.audioAssetUri)
+    // La grabación reemplaza al segmento principal (el último CORE, el mismo que repite el mantra).
+    val recordedIndex = if (recording == null) {
+        -1
+    } else {
+        ordered.indexOfLast { it.phase == "CORE" }.takeIf { it >= 0 } ?: ordered.lastIndex
+    }
+    return PracticeRunSpec(
+        practiceId = practice.id,
+        title = practice.title,
+        defaultPaceWpm = practice.defaultPaceWpm,
+        meritDedication = practice.meritDedication,
+        segments = ordered.mapIndexed { index, it ->
+            PracticeSegmentModel(
+                id = it.id,
+                order = it.segmentOrder,
+                phase = it.phase,
+                heading = it.heading,
+                text = it.text,
+                transliteration = it.transliteration,
+                meaning = it.meaning,
+                pauseAfterSec = it.pauseAfterSec,
+                repeatCount = it.repeatCount,
+                audioPath = if (index == recordedIndex) recording else null,
+            )
+        },
+        mantraConfig = mantraConfig?.let {
+            MantraRunConfig(
+                targetRepetitions = it.targetRepetitions,
+                bellEveryN = it.bellEveryN,
+                pauseBetweenRepsMs = it.pauseBetweenRepsMs,
+                presetCounts = parsePresetCounts(it.presetCountsJson),
+            )
+        },
+        practiceType = practice.type,
+        imagePath = practice.imageUri,
+    )
+}

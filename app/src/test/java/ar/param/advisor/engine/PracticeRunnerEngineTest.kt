@@ -13,10 +13,15 @@ import org.junit.Test
 private class FakeSpeechPort : SpeechPort {
     val spoken = mutableListOf<String>()
     val bells = mutableListOf<Boolean>()
+    val audioPaths = mutableListOf<String?>()
+    val paces = mutableListOf<Int>()
     var speakMs = 0L
-    override fun setPaceFromWpm(wpm: Int) = Unit
-    override suspend fun speakAndAwait(text: String, mode: RecitationMode) {
+    override fun setPaceFromWpm(wpm: Int) {
+        paces += wpm
+    }
+    override suspend fun speakAndAwait(text: String, mode: RecitationMode, audioPath: String?) {
         spoken += text
+        audioPaths += audioPath
         if (speakMs > 0) kotlinx.coroutines.delay(speakMs)
     }
     override fun ringBell(isCycleMilestone: Boolean) {
@@ -63,6 +68,29 @@ class PracticeRunnerEngineTest {
         assertEquals(listOf(true, true, false), h.speech.bells)
         assertEquals(RunnerStatus.COMPLETED, h.engine.snapshot.value.status)
         assertEquals(listOf(true), h.finished)
+    }
+
+    @Test
+    fun recordedMantraPassesTheRecordingOnEveryRound() = runTest {
+        val h = Harness(this)
+        val recorded = seg(1, "CORE", "OM").copy(audioPath = "/rec.m4a")
+        h.engine.start(mantra(target = 3, bellEvery = 0, segments = listOf(recorded)))
+        advanceUntilIdle()
+        assertEquals(listOf<String?>("/rec.m4a", "/rec.m4a", "/rec.m4a"), h.speech.audioPaths)
+    }
+
+    @Test
+    fun paceCanChangeWhilePlaying() = runTest {
+        val h = Harness(this)
+        h.speech.speakMs = 1_000L
+        h.engine.start(mantra(target = 5, bellEvery = 0).copy(defaultPaceWpm = 100))
+        runCurrent()
+        assertEquals(100, h.engine.snapshot.value.paceWpm)
+        h.engine.setPace(168)
+        assertEquals(168, h.engine.snapshot.value.paceWpm)
+        assertEquals(listOf(100, 168), h.speech.paces)
+        advanceUntilIdle()
+        assertEquals(RunnerStatus.COMPLETED, h.engine.snapshot.value.status)
     }
 
     @Test

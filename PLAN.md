@@ -126,7 +126,12 @@
 ## Backlog (sin fase asignada)
 
 - [ ] **B-01** Más contenido: más versos de las 37 Prácticas, más oraciones y mantras (previa autorización y revisión).
-- [ ] **B-02** Audios grabados (`audio_asset_uri`) además del TTS.
+- [~] **B-02** Audios grabados (`audio_asset_uri`) además del TTS. Grabaciones propias hechas en v0.4.0 (ADR-0009). Faltan los audios del catálogo (Q-04).
+- [x] **B-08** Prácticas propias en texto: alta, edición y baja (archivo). ADR-0008, v0.4.0.
+- [x] **B-09** Imagen por práctica y símbolos auspiciosos; DB v2 (ADR-0010), v0.4.0.
+- [x] **B-10** Voz de las prácticas: voz, tono, volumen y ecualización; velocidad por práctica y en vivo. v0.4.0.
+- [ ] **B-11** Meditaciones guiadas: hoy solo hay una tarjeta "Estamos trabajando en esto" en Inicio.
+- [ ] **B-12** Probar en el teléfono de Vicente: grabar, importar audio, imagen, ecualización y cambiar la velocidad mientras suena.
 - [ ] **B-03** Asesor IA opcional, acotado al catálogo (requiere ADR propio y spec ética).
 - [ ] **B-04** Quick Settings Tile "Freno de impulso".
 - [ ] **B-05** Exportar e importar el historial personal (backup local).

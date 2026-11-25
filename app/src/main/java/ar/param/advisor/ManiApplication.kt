@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo
 import ar.param.advisor.data.catalog.CatalogSeeder
 import ar.param.advisor.data.local.ManiDatabase
 import ar.param.advisor.data.settings.ManiSettings
+import ar.param.advisor.data.user.UserMediaStore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class ManiApplication : Application() {
     val meritAndCalmDao by lazy { database.meritAndCalmDao() }
     val mindfulAppTargetDao by lazy { database.mindfulAppTargetDao() }
     val settings: ManiSettings by lazy { ManiSettings(this) }
+    val userMedia: UserMediaStore by lazy { UserMediaStore(this) }
 
     lateinit var catalogSeed: Deferred<Result<Int>>
         private set

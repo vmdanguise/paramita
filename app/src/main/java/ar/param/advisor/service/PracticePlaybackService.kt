@@ -70,13 +70,15 @@ class PracticePlaybackService : Service() {
     override fun onCreate() {
         super.onCreate()
         createChannel()
-        speech = SpeechAndBellController(this)
+        speech = SpeechAndBellController(this, app.settings.voice.value)
         engine = PracticeRunnerEngine(
             scope = scope,
             speech = speech,
             onSessionFinished = { spec, snapshot, completedFull -> persistSession(spec, snapshot, completedFull) },
         )
         scope.launch { engine.snapshot.collect(::onSnapshot) }
+        // Los cambios de voz o ecualización valen desde la próxima frase, sin reiniciar la práctica.
+        scope.launch { app.settings.voice.collect { speech.voice = it } }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -91,6 +93,7 @@ class PracticePlaybackService : Service() {
             ACTION_SET_MODE -> intent.getStringExtra(EXTRA_RECITATION_MODE)
                 ?.let { name -> RecitationMode.entries.firstOrNull { it.name == name } }
                 ?.let(engine::setRecitationMode)
+            ACTION_SET_PACE -> intent.getIntExtra(EXTRA_PACE_WPM, -1).takeIf { it > 0 }?.let(engine::setPace)
             else -> if (!engine.snapshot.value.isActive) stopSelf()
         }
         return START_NOT_STICKY
@@ -330,6 +333,7 @@ class PracticePlaybackService : Service() {
         const val ACTION_RESUME = "ar.param.advisor.action.RESUME"
         const val ACTION_STOP = "ar.param.advisor.action.STOP"
         const val ACTION_SET_MODE = "ar.param.advisor.action.SET_MODE"
+        const val ACTION_SET_PACE = "ar.param.advisor.action.SET_PACE"
 
         const val EXTRA_PRACTICE_ID = "ar.param.advisor.extra.PRACTICE_ID"
         const val EXTRA_TARGET_REPS = "ar.param.advisor.extra.TARGET_REPS"
@@ -368,6 +372,17 @@ class PracticePlaybackService : Service() {
                     .setAction(ACTION_SET_MODE)
                     .putExtra(EXTRA_RECITATION_MODE, mode.name),
             )
+        }
+
+        fun setPace(context: Context, paceWpm: Int) {
+            if (!sessionState.value.isActive) return
+            runCatching {
+                context.startService(
+                    Intent(context, PracticePlaybackService::class.java)
+                        .setAction(ACTION_SET_PACE)
+                        .putExtra(EXTRA_PACE_WPM, paceWpm),
+                )
+            }.onFailure { Log.w(TAG, "No se pudo cambiar la velocidad", it) }
         }
 
         private fun send(context: Context, action: String) {

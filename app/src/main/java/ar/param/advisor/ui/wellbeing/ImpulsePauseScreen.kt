@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -33,12 +32,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -49,6 +48,8 @@ import ar.param.advisor.digitalwellbeing.ImpulseEmotion
 import ar.param.advisor.digitalwellbeing.ImpulsePauseDecision
 import ar.param.advisor.digitalwellbeing.PauseOutcome
 import ar.param.advisor.digitalwellbeing.suggestedPracticeFor
+import ar.param.advisor.ui.components.AuspiciousImage
+import ar.param.advisor.ui.components.AuspiciousSymbol
 import kotlinx.coroutines.delay
 
 private enum class Stage { BREATH, INQUIRY, AMOUNT, REFLECT }
@@ -174,12 +175,9 @@ private fun BreathStage(onDone: () -> Unit) {
     val inhaling = remaining > 3
     val scale by animateFloatAsState(if (inhaling) 1.25f else 0.85f, tween(2_800), label = "respiración")
     Box(Modifier.fillMaxWidth().padding(vertical = 12.dp), contentAlignment = Alignment.Center) {
-        Icon(
-            painterResource(R.drawable.ic_lotus_calm),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(96.dp).scale(scale),
-        )
+        // Un símbolo auspicioso que "respira" con vos (antes era el loto de la app).
+        val symbol = remember { AuspiciousSymbol.forDay() }
+        AuspiciousImage(symbol, Modifier.size(112.dp).scale(scale), decorative = true)
     }
     Text(
         stringResource(R.string.pause_breath, remaining),

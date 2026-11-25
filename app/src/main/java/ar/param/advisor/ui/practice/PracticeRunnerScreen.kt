@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -38,6 +39,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,11 +69,15 @@ import ar.param.advisor.engine.RunnerStatus
 import ar.param.advisor.service.PracticePlaybackService
 import ar.param.advisor.service.rememberPracticeServiceState
 import ar.param.advisor.ui.ManiViewModel
+import ar.param.advisor.ui.components.AuspiciousImage
+import ar.param.advisor.ui.components.AuspiciousSymbol
+import ar.param.advisor.ui.components.PracticeArtwork
 import ar.param.advisor.ui.home.practiceTypeLabel
+import ar.param.advisor.ui.practices.SpeedSlider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PracticeRunnerScreen(practiceId: String, viewModel: ManiViewModel, onBack: () -> Unit) {
+fun PracticeRunnerScreen(practiceId: String, viewModel: ManiViewModel, onBack: () -> Unit, onEdit: () -> Unit = {}) {
     val details by remember(practiceId) { viewModel.observePractice(practiceId) }
         .collectAsStateWithLifecycle(initialValue = null)
     val spec by remember(practiceId) { viewModel.observePracticeSpec(practiceId) }
@@ -84,6 +90,14 @@ fun PracticeRunnerScreen(practiceId: String, viewModel: ManiViewModel, onBack: (
             TopAppBar(
                 title = { Text(stringResource(R.string.practice_screen_title)) },
                 navigationIcon = { TextButton(onClick = onBack) { Text(stringResource(R.string.action_back)) } },
+                actions = {
+                    // Solo las prácticas propias se editan; el catálogo no se toca (textos litúrgicos).
+                    val editable = details?.practice?.isUserCreated == true &&
+                        !(serviceState.practiceId == practiceId && serviceState.isActive)
+                    if (editable) {
+                        TextButton(onClick = onEdit) { Text(stringResource(R.string.action_edit)) }
+                    }
+                },
             )
         },
     ) { padding ->
@@ -115,6 +129,7 @@ fun PracticeRunnerScreen(practiceId: String, viewModel: ManiViewModel, onBack: (
 
             if (completedHere || (stoppedHere && !live)) {
                 DedicationCard(
+                    symbol = AuspiciousSymbol.forKey(current.practiceId + serviceState.sessionStartedAtEpochMs),
                     dedication = current.meritDedication,
                     completed = completedHere,
                     onDedicate = {
@@ -170,7 +185,11 @@ private fun RunnerBody(
     var selectedMode by rememberSaveable(spec.practiceId) { mutableStateOf(RecitationMode.SPOKEN) }
     var selectedReps by rememberSaveable(spec.practiceId) { mutableIntStateOf(spec.mantraConfig?.targetRepetitions ?: 0) }
     var keepScreenOn by rememberSaveable { mutableStateOf(false) }
+    var selectedPace by rememberSaveable(spec.practiceId) { mutableIntStateOf(spec.defaultPaceWpm) }
     val mode = if (live) snapshot.recitationMode else selectedMode
+    LaunchedEffect(live, snapshot.paceWpm) {
+        if (live && snapshot.paceWpm > 0) selectedPace = snapshot.paceWpm
+    }
 
     val view = LocalView.current
     DisposableEffect(keepScreenOn, live) {
@@ -183,7 +202,7 @@ private fun RunnerBody(
         PracticePlaybackService.startPractice(
             context,
             spec.practiceId,
-            PlaybackOverrides(targetReps = selectedReps.takeIf { it > 0 }, mode = selectedMode),
+            PlaybackOverrides(targetReps = selectedReps.takeIf { it > 0 }, mode = selectedMode, paceWpm = selectedPace),
         )
     }
     // El permiso de notificaciones se pide acá, al iniciar una práctica, nunca al abrir la app (REQ-009).
@@ -199,6 +218,14 @@ private fun RunnerBody(
             start()
         }
     }
+
+    // La imagen propia de la práctica o, si no tiene, los símbolos auspiciosos rotando.
+    PracticeArtwork(
+        imagePath = spec.imagePath,
+        fallbackKey = spec.practiceId,
+        rotateWhenNoImage = true,
+        modifier = Modifier.fillMaxWidth().height(if (spec.imagePath != null) 200.dp else 128.dp),
+    )
 
     Progress(spec, snapshot, live)
 
@@ -245,6 +272,13 @@ private fun RunnerBody(
             }
         }
     }
+
+    SpeedSlider(
+        paceWpm = selectedPace,
+        onChange = { selectedPace = it },
+        onChangeFinished = { if (live) PracticePlaybackService.setPace(context, selectedPace) },
+        showHint = live,
+    )
 
     Controls(
         status = if (live) snapshot.status else RunnerStatus.IDLE,
@@ -346,12 +380,19 @@ private fun ControlButton(icon: Int, label: Int, onClick: () -> Unit, modifier: 
 }
 
 @Composable
-private fun DedicationCard(dedication: String, completed: Boolean, onDedicate: () -> Unit, onReturn: () -> Unit) {
+private fun DedicationCard(
+    symbol: AuspiciousSymbol,
+    dedication: String,
+    completed: Boolean,
+    onDedicate: () -> Unit,
+    onReturn: () -> Unit,
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer),
     ) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            AuspiciousImage(symbol, Modifier.size(96.dp).align(Alignment.CenterHorizontally))
             Text(
                 stringResource(if (completed) R.string.dedication_completed else R.string.dedication_stopped),
                 style = MaterialTheme.typography.titleMedium,

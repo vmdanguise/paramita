@@ -20,12 +20,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -39,6 +41,9 @@ import ar.param.advisor.data.local.entity.PracticeWithDetails
 import ar.param.advisor.engine.RunnerSnapshot
 import ar.param.advisor.engine.RunnerStatus
 import ar.param.advisor.ui.RefugeHomeUiState
+import ar.param.advisor.ui.components.AuspiciousImage
+import ar.param.advisor.ui.components.AuspiciousSymbol
+import ar.param.advisor.ui.components.PracticeArtwork
 import ar.param.advisor.ui.navigation.ParamitaLinks
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,12 +56,17 @@ fun RefugeHomeScreen(
     onOpenMindfulTargets: () -> Unit,
     onStartWithRefugeChange: (Boolean) -> Unit,
     onOpenLink: (String) -> Unit,
+    onNewPractice: () -> Unit = {},
+    onOpenVoice: () -> Unit = {},
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineSmall) },
-                actions = { TextButton(onClick = onOpenFaq) { Text(stringResource(R.string.home_faq)) } },
+                actions = {
+                    TextButton(onClick = onOpenVoice) { Text(stringResource(R.string.home_voice_settings)) }
+                    TextButton(onClick = onOpenFaq) { Text(stringResource(R.string.home_faq)) }
+                },
             )
         },
     ) { padding ->
@@ -65,6 +75,7 @@ fun RefugeHomeScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            item { DailySymbol() }
             val snapshot = state.activeRunnerSnapshot
             if (snapshot.isActive && snapshot.practiceId != null) {
                 item { ActiveSessionBanner(snapshot) { onOpenPractice(snapshot.practiceId) } }
@@ -88,8 +99,38 @@ fun RefugeHomeScreen(
             items(state.practices, key = { it.practice.id }) { p ->
                 PracticeCard(p, highlighted = false) { onOpenPractice(p.practice.id) }
             }
+            item { SectionTitle(R.string.home_my_practices) }
+            if (state.myPractices.isEmpty()) {
+                item {
+                    Text(
+                        stringResource(R.string.home_my_practices_empty),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(state.myPractices, key = { it.practice.id }) { p ->
+                PracticeCard(p, highlighted = false) { onOpenPractice(p.practice.id) }
+            }
+            item {
+                OutlinedButton(onClick = onNewPractice, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.home_new_practice))
+                }
+            }
+            item { GuidedMeditationCard() }
             item { WeekNote(state.practiceMomentsThisWeek) }
             item { StartWithRefugeRow(state.startWithRefuge, onStartWithRefugeChange) }
+            if (state.startWithRefuge) {
+                state.startupPracticeTitle?.let { title ->
+                    item {
+                        Text(
+                            stringResource(R.string.home_startup_practice, title),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
             item { ParamitaLinksCard(onOpenLink) }
         }
     }
@@ -179,12 +220,21 @@ private fun PracticeCard(p: PracticeWithDetails, highlighted: Boolean, onClick: 
         ),
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-                painter = painterResource(R.drawable.ic_lotus_calm),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp),
-            )
+            if (p.practice.imageUri != null) {
+                PracticeArtwork(
+                    imagePath = p.practice.imageUri,
+                    fallbackKey = p.practice.id,
+                    modifier = Modifier.size(52.dp),
+                    cornerRadiusDp = 12,
+                )
+            } else {
+                Icon(
+                    painter = painterResource(R.drawable.ic_lotus_calm),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(28.dp),
+                )
+            }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text(p.practice.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
@@ -200,10 +250,48 @@ private fun PracticeCard(p: PracticeWithDetails, highlighted: Boolean, onClick: 
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (p.practice.isUserCreated) {
+                    Text(
+                        stringResource(R.string.practice_mine),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.secondary,
+                    )
+                }
             }
             if (p.practice.isFavorite) {
                 Text("★", color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.titleMedium)
             }
+        }
+    }
+}
+
+@Composable
+private fun DailySymbol() {
+    val symbol = remember { AuspiciousSymbol.forDay() }
+    Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+        AuspiciousImage(symbol, Modifier.size(112.dp))
+        Text(
+            stringResource(symbol.label),
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.secondary,
+            modifier = Modifier.padding(top = 4.dp),
+        )
+    }
+}
+
+@Composable
+private fun GuidedMeditationCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(stringResource(R.string.home_guided_title), style = MaterialTheme.typography.titleMedium)
+            Text(
+                stringResource(R.string.home_guided_body),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

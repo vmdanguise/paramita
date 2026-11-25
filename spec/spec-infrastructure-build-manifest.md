@@ -1,8 +1,8 @@
 ---
 title: Build (Gradle), Manifest, Application y MainActivity
-version: 1.1
+version: 1.2
 date_created: 2026-11-24
-last_updated: 2026-11-24
+last_updated: 2026-11-24 (v1.2: RECORD_AUDIO para mantras propios, ADR-0009)
 owner: Vicente
 tags: [infrastructure, gradle, manifest, build]
 ---
@@ -48,6 +48,9 @@ Proyecto Android de un solo módulo (`:app`). Referencia en el chat: líneas ~60
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
   <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+  <!-- v1.2 (ADR-0009): solo para grabar mantras propios; se pide al tocar "Grabar". -->
+  <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
   <queries>
     <intent>

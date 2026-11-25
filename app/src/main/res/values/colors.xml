@@ -6,4 +6,6 @@
     <color name="paramita_gold">#FFFFAE00</color>
     <color name="paramita_cream">#FFFEF7E5</color>
     <color name="mani_window_background">#FFFEF7E5</color>
+    <!-- Fondo del ícono "joya en el loto" (diseño propio, sin el logo de Paramita: Q-01). -->
+    <color name="mani_icon_background">#FF2F5A70</color>
 </resources>

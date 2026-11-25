@@ -11,6 +11,9 @@ Un ADR documenta una decisión estructural: contexto, opciones, decisión y cons
 | [0005](0005-lista-blanca-urls.md) | Lista blanca de URLs externas | Aceptado |
 | [0006](0006-accessibility-vs-usagestats.md) | Detección de apps: AccessibilityService opt-in vs. UsageStats | Aceptado con riesgo |
 | [0007](0007-identidad-mani-paquete-sdk.md) | Identidad "Mani", paquete `ar.param.advisor` y base de build (AGP 9 / SDK 37.2) | Aceptado |
+| [0008](0008-practicas-propias.md) | Prácticas propias en las mismas tablas que el catálogo | Aceptado |
+| [0009](0009-grabaciones-propias-record-audio.md) | Mantras grabados por el usuario y permiso `RECORD_AUDIO` | Aceptado |
+| [0010](0010-imagen-practica-migracion-v2.md) | Imagen por práctica, símbolos auspiciosos y base de datos v2 | Aceptado |
 
 ## Plantilla
 
